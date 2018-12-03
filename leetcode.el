@@ -22,7 +22,7 @@
 (defun list-all ()
   "Create a new buffer to show all leetcode programs list"
   (interactive)
-  (setq mode-buffer (get-buffer-create "*leetcode*"))
+  (setq mode-buffer (get-buffer-create "*leetcode-list*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
   (setq show-list (reverse (split-string (shell-command-to-string "leetcode list") "\n")))
@@ -72,7 +72,7 @@
   "show leetcode programs message and download file"
   (interactive "nProgram Number: ")
   (delete-other-windows)
-  (setq mode-buffer (get-buffer-create "*leetcode*"))
+  (setq mode-buffer (get-buffer-create "*leetcode-description*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
   (split-window-right)
@@ -86,7 +86,19 @@
     (if file
 	(show-and-open n file)
       (show-and-create n)))
+  )
 
+(defun submit ()
+  "submit the current buffer solution"
+  (interactive)
+  (delete-other-windows)
+  (setq the-buffer-name (buffer-name))
+  (split-window-right)
+  (other-window 1)
+  (setq mode-buffer (get-buffer-create "*leetcode-result*"))
+  (switch-to-buffer mode-buffer)
+  (erase-buffer)
+  (insert (shell-command-to-string (concat "leetcode submit " the-buffer-name)))
   )
 
 
