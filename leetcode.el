@@ -1,4 +1,4 @@
-;;; leetcode.el --- a plugin for leetcode
+;;; leetcode.el --- a plugin for leetcodeme
 ;;; Commentary:
 ;;; code:
 (require 'ctable)
@@ -6,6 +6,7 @@
 (define-namespace leetcode-
 
 (defun -split-string (str)
+  "Divide a leetcode entry title into 5 columns"
   (setq n1 (string-match "\\[" str)
 	n2 (string-match "\\]" str n1)
 	n3 (string-match "Easy\\|Medium\\|Hard" str n1)
@@ -19,6 +20,7 @@
   )
 
 (defun list-all ()
+  "Create a new buffer to show all leetcode programs list"
   (interactive)
   (setq mode-buffer (get-buffer-create "*leetcode*"))
   (switch-to-buffer mode-buffer)
@@ -38,7 +40,57 @@
     )
    )
   (setq buffer-read-only nil)
-  ))
+  )
+
+(defun file-exists-number-p (file number)
+  "Determine if the file name contains a number"
+  (equal number (first (split-string file "\\."))))
+
+(defun find-file-number (files number)
+  "Determine if there is a file containing the number in the directory"
+  (if (not files)
+      nil
+    (if (file-exists-number-p (car files) number)
+	(car files)
+      (find-file-number (cdr files) number))))
+
+(defun show-and-open (n file)
+  "show leetcode programs message and open exists file"
+  
+  (insert (shell-command-to-string (concat "leetcode show " (number-to-string n))))
+  (find-file file)
+  )
+
+(defun show-and-create (n)
+  "show leetcode programs message and download file"
+  
+  (insert (shell-command-to-string (concat "leetcode show " (number-to-string n) " -g -l " leetcode-language)))
+  (find-file (find-file-number (directory-files default-directory) (number-to-string n)))
+  )
+
+(defun show (n)
+  "show leetcode programs message and download file"
+  (interactive "nProgram Number: ")
+  (delete-other-windows)
+  (setq mode-buffer (get-buffer-create "*leetcode*"))
+  (switch-to-buffer mode-buffer)
+  (erase-buffer)
+  (split-window-right)
+  (setq-local default-directory leetcode-path)
+  (setq new-path (expand-file-name leetcode-language))
+  (if (file-exists-p new-path)
+      "directory exists"
+    (make-directory new-path))
+  (setq default-directory new-path)
+  (let ((file (find-file-number (directory-files default-directory) (number-to-string n))))
+    (if file
+	(show-and-open n file)
+      (show-and-create n)))
+
+  )
+
+
+)
 
 (provide 'leetcode)
 ;;; leetcode.el ends here
