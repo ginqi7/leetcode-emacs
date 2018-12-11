@@ -98,9 +98,21 @@
   (setq mode-buffer (get-buffer-create "*leetcode-result*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
-  (insert (shell-command-to-string (concat "leetcode submit " the-buffer-name)))
+  (insert (shell-command-to-string (concat (concat "leetcode submit " the-buffer-name) " &")))
   )
 
+(defun test (s)
+  "submit the current buffer solution"
+  (interactive "stestcase: ")
+  (delete-other-windows)
+  (setq the-buffer-name (buffer-name))
+  (split-window-right)
+  (other-window 1)
+  (setq mode-buffer (get-buffer-create "*leetcode-result*"))
+  (switch-to-buffer mode-buffer)
+  (erase-buffer)
+  (insert (shell-command-to-string (concat (concat (concat (concat "leetcode test " the-buffer-name) " -t ") s) " &")))
+  )
 
 )
 
