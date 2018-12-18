@@ -56,15 +56,13 @@
 
 (defun show-and-open (n file)
   "show leetcode programs message and open exists file"
-  
-  (insert (shell-command-to-string (concat "leetcode show " (number-to-string n))))
+  (insert (shell-command-to-string (format "leetcode show %s" n)))
   (find-file file)
   )
 
 (defun show-and-create (n)
   "show leetcode programs message and download file"
-  
-  (insert (shell-command-to-string (concat "leetcode show " (number-to-string n) " -g -l " leetcode-language)))
+  (insert (shell-command-to-string (format "leetcode show %s -g -l %s" n leetcode-language)))
   (find-file (find-file-number (directory-files default-directory) (number-to-string n)))
   )
 
@@ -98,7 +96,7 @@
   (setq mode-buffer (get-buffer-create "*leetcode-result*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
-  (insert (shell-command-to-string (concat (concat "leetcode submit " the-buffer-name) " &")))
+  (insert (shell-command-to-string (format "leetcode submit %s" the-buffer-name)))
   )
 
 (defun test (s)
@@ -111,7 +109,7 @@
   (setq mode-buffer (get-buffer-create "*leetcode-result*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
-  (insert (shell-command-to-string (concat (concat (concat (concat "leetcode test " the-buffer-name) " -t ") s) " &")))
+  (insert (shell-command-to-string (format "leetcode test %s -t %s" the-buffer-name s)))
   )
 
 )
