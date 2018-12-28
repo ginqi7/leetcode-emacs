@@ -86,6 +86,12 @@
       (show-and-create n)))
   )
 
+(defun show-next ()
+  "show the next leetcode programs after the current buffer"
+  (interactive)
+  (leetcode-show (+ 1 (string-to-number (first (split-string the-buffer-name "\\.")))))
+  )
+
 (defun submit ()
   "submit the current buffer solution"
   (interactive)
