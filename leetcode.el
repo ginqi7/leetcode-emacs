@@ -89,7 +89,7 @@
 (defun show-next ()
   "show the next leetcode programs after the current buffer"
   (interactive)
-  (leetcode-show (+ 1 (string-to-number (first (split-string the-buffer-name "\\.")))))
+  (leetcode-show (+ 1 (string-to-number (first (split-string (buffer-name) "\\.")))))
   )
 
 (defun submit ()
