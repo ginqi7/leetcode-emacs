@@ -33,26 +33,26 @@ you can use the 'use-package', there are two configurable variable.
 *leetcode-login*:
 
 #+CAPTION: leetcode-login
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-login.gif]]
 
 *leetcode-logout*:
 
 #+CAPTION: leetcode-logout
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-logout.gif]]
 *** list all questions
 *leetcode-list-all*:
 
 #+CAPTION: leetcode-list-all
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-list-all.gif]]
 *** show a specific question
 *leetcode-show n*:
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
 
 #+CAPTION: leetcode-show 60
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-show.gif]]
 *** show next question
 *leetcode-show-next*:
@@ -60,13 +60,13 @@ show a description and generate a code's template of a specific question. The pa
 If you solve the question in order, you can go to the next question through =leetcode-show-next=.
 
 #+CAPTION: leetcode-show-next
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-show-next.gif]]
 *** submit the question answer
 *leetcode-submit*:
 
 #+CAPTION: leetcode-submit
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-submit.gif]]
 *** test the question answer
 *leetcode-test*:
@@ -74,5 +74,5 @@ If you solve the question in order, you can go to the next question through =lee
 You can specify a test case to check if the answer is correct.
 
 #+CAPTION: leetcode-test
-#+ATTR_HTML style="margin-left: auto; margin-right: auto; width: 50%;"
+#+ATTR_HTML: :style margin-left: auto; margin-right: auto; width: 50%;
 [[./resources/leetcode-test.gif]]
