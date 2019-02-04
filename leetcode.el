@@ -42,6 +42,7 @@
     )
    )
   (setq buffer-read-only nil)
+  (beginning-of-buffer)
   )
 
 (defun file-exists-number-p (file number)
