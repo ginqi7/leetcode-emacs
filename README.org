@@ -33,7 +33,7 @@ you can use the 'use-package', there are two configurable variable.
 *leetcode-login*:
 
 #+CAPTION: leetcode-login
-#+ATTR_HTML: :style margin-left: auto; margin-right: auto; :width 600px;
+#+attr_html: :width 100px
 [[./resources/leetcode-login.gif]]
 
 *leetcode-logout*:
