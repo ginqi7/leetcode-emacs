@@ -128,6 +128,33 @@
     s))))
   )
 
+(defun login (username passwd)
+  "login"
+  (interactive (list
+		(read-string "username: ")
+		(read-passwd "password: ")))
+
+  (let ((string (eshell-command-result (format "echo '%s\n%s\n' | leetcode user -l"
+					       username passwd))))
+    (if (string-match-p "Error" string)
+	(message "Error: please check your username, password and network")
+      (message (format "Successfully login as %s" username)))
+    )
+  )
+
+(defun logout ()
+  "logout"
+  (interactive)
+  (let ((string (shell-command-to-string "leetcode user -L")))
+    (if (string-match-p "Error" string)
+	(message "Error: please check your network")
+      (message "Successfully logout"))
+    )
+  )
+
+
+
+
 )
 
 (provide 'leetcode)
