@@ -32,40 +32,33 @@ you can use the 'use-package', there are two configurable variable.
 *** login / logout
 *leetcode-login*:
 
-#+CAPTION: leetcode-login
-[[./resources/leetcode-login.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-login.gif"></p>
 
 *leetcode-logout*:
 
-#+CAPTION: leetcode-logout
-[[./resources/leetcode-logout.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-logout.gif"></p>
 *** list all questions
 *leetcode-list-all*:
 
-#+CAPTION: leetcode-list-all
-[[./resources/leetcode-list-all.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-list-all.gif"></p>
 *** show a specific question
 *leetcode-show n*:
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
 
-#+CAPTION: leetcode-show 60
-[[./resources/leetcode-show.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-show.gif"></p>
 *** show next question
 *leetcode-show-next*:
 
 If you solve the question in order, you can go to the next question through =leetcode-show-next=.
 
-#+CAPTION: leetcode-show-next
-[[./resources/leetcode-show-next.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-show-next.gif"></p>
 *** submit the question answer
 *leetcode-submit*:
 
-#+CAPTION: leetcode-submit
-[[./resources/leetcode-submit.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-submit.gif"></p>
 *** test the question answer
 *leetcode-test*:
 
 You can specify a test case to check if the answer is correct.
 
-#+CAPTION: leetcode-test
-[[./resources/leetcode-test.gif]]
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-test.gif"></p>
