@@ -5,6 +5,8 @@
 
 (define-namespace leetcode-
 
+(defvar test-case-history nil)
+
 (defun -split-string (str)
   "Divide a leetcode entry title into 5 columns"
   (setq n1 (string-match "\\[" str)
@@ -69,6 +71,7 @@
 (defun show (n)
   "show leetcode programs message and download file"
   (interactive "nProgram Number: ")
+  (setq leetcode-test-case-history nil) 
   (delete-other-windows)
   (setq mode-buffer (get-buffer-create "*leetcode-description*"))
   (switch-to-buffer mode-buffer)
@@ -107,7 +110,12 @@
 
 (defun test (s)
   "submit the current buffer solution"
-  (interactive "stestcase: ")
+  (interactive
+   (if leetcode-test-case-history
+       (list (read-string (format "test-case (%s): " (car leetcode-test-case-history)) nil 'leetcode-test-case-history))
+     (list (read-string "test-case: " nil 'leetcode-test-case-history)))
+   )
+  
   (delete-other-windows)
   (setq the-buffer-name (buffer-name))
   (split-window-right)
@@ -115,7 +123,9 @@
   (setq mode-buffer (get-buffer-create "*leetcode-result*"))
   (switch-to-buffer mode-buffer)
   (erase-buffer)
-  (insert (shell-command-to-string (format "leetcode test %s -t %s" the-buffer-name s)))
+  (insert (shell-command-to-string (format "leetcode test %s -t %s" the-buffer-name (if leetcode-test-case-history
+      (car leetcode-test-case-history)
+    s))))
   )
 
 )
