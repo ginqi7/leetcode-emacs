@@ -1,3 +1,72 @@
 * Leetcode-emacs
 
 This is an Emacs plugin that makes it easier and faster to write leetcode programs.
+
+** Getting Started
+*** Prerequisites
++ leetcode-cli
+
+This tool is based on leetcode-cli, You can install the latest version through its [[https://github.com/skygragon/leetcode-cli][website]].
+*** Installing
++ clone the project in your own emacs configuration files directory, like:
+#+BEGIN_SRC sh
+  git clone git@github.com:ginqi7/leetcode-emacs.git ~/.emacs.d/lisp/leetcode
+#+END_SRC
+
++ add the path to 'load-path'
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/leetcode"))
+#+END_SRC
+*** Configuration 
+you can use the 'use-package', there are two configurable variable.
++ =leetcode-path= : assign the path to save the solution codes
++ =leetcode-language= : assign the the language of the solutions
+
+#+BEGIN_SRC emacs-lisp
+(use-package leetcode
+    :config
+    (setq leetcode-path "~/Dropbox/Leetcode/"
+          leetcode-language "java")
+)
+#+END_SRC
+*** Features
+**** login / logout
+*leetcode-login*:
+
+#+CAPTION: leetcode-login
+[[./resources/leetcode-login.gif]]
+
+*leetcode-logout*:
+
+#+CAPTION: leetcode-logout
+[[./resources/leetcode-logout.gif]]
+**** list all questions
+*leetcode-list-all*:
+
+#+CAPTION: leetcode-list-all
+[[./resources/leetcode-list-all.gif]]
+**** show a specific question
+*leetcode-show n*:
+show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
+
+#+CAPTION: leetcode-show 60
+[[./resources/leetcode-show.gif]]
+**** show next question
+*leetcode-show-next*:
+
+If you solve the question in order, you can go to the next question through =leetcode-show-next=.
+
+#+CAPTION: leetcode-show-next
+[[./resources/leetcode-show-next.gif]]
+**** submit the question answer
+*leetcode-submit*:
+
+#+CAPTION: leetcode-submit
+[[./resources/leetcode-submit.gif]]
+**** test the question answer
+*leetcode-test*:
+
+You can specify a test case to check if the answer is correct.
+
+#+CAPTION: leetcode-test
+[[./resources/leetcode-test.gif]]
