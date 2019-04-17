@@ -11,6 +11,12 @@
 
 (defvar language nil)
 
+(defun -remove-dos-eol ()
+  "Do not show ^M in files containing mixed UNIX and DOS line endings."
+  (interactive)
+  (setq buffer-display-table (make-display-table))
+  (aset buffer-display-table ?\^M []))
+
 (defun -split-string (str)
   "Divide a leetcode entry title into 5 columns.
 STR is a leetcode entry title."
@@ -95,6 +101,7 @@ N is a leetcode program number."
     (let ((file (find-file-number (directory-files default-directory) (number-to-string n))))
       (if file
 	  (show-and-open n file)
+      (leetcode--remove-dos-eol)
 	(show-and-create n)))))
 
 (defun show-next ()
