@@ -66,13 +66,16 @@ NUMBER is a number."
   "Show leetcode programs message and open exists file.
 N is a leetcode program number.
 FILE is a generated program file name by leetcode."
-  (insert (shell-command-to-string (format "leetcode show %s" n)))
+  (let ((raw-message (shell-command-to-string (format "leetcode show %s" n))))
+    (insert (replace-regexp-in-string "\015" "" raw-message)))
   (find-file file))
 
 (defun show-and-create (n)
   "Show leetcode programs message and download file.
 N is a leetcode program number."
-  (insert (shell-command-to-string (format "leetcode show %s -g -l %s" n leetcode-language)))
+
+  (let ((raw-message (shell-command-to-string (format "leetcode show %s -g -l %s" n leetcode-language))))
+    (insert (replace-regexp-in-string "\015" "" raw-message)))
   (find-file (find-file-number (directory-files default-directory) (number-to-string n))))
 
 (defun show (n)
