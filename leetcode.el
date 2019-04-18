@@ -2,14 +2,15 @@
 ;;; Commentary:
 ;;; code:
 (require 'ctable)
+(require 'names)
 
 (define-namespace leetcode-
 
 (defvar test-case-history nil)
 
-(defvar path nil)
+(defvar path "~/")
 
-(defvar language nil)
+(defvar language "java")
 
 (defun -split-string (str)
   "Divide a leetcode entry title into 5 columns.
