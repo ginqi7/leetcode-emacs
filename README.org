@@ -11,6 +11,11 @@ This tool is based on leetcode-cli, You can install the latest version through i
 This tool uses the emacs package =ctable= to show all leetcode issues,
 you can download it from [[https://github.com/kiwanami/emacs-ctable][github]] or install it using ELPA.
 
++ names
+This tool uses the emacs package =names= manage namespace,
+you can download it from [[https://github.com/Malabarba/names][github]] or install it using ELPA.
+
+
 ** Installing
 + clone the project in your own emacs configuration files directory, like:
 #+BEGIN_SRC sh
