@@ -17,6 +17,10 @@
       (widen)
       (buffer-substring-no-properties (point-min) (point-max)))))
 
+(defun get-current-buff-num ()
+  "Convert current buffer name to number"
+  (first (split-string (buffer-name) "\\."))
+  )
 
 (defun -split-string (str)
   "Divide a leetcode entry title into 5 columns.
@@ -33,15 +37,6 @@ STR is a leetcode entry title."
          (substr5 (substring str n4)))
     (list substr1 substr2  substr3 substr4 substr5)))
 
-(defun list-all ()
-  "Async Create a new buffer to show all leetcode programs list."
-  (interactive)
-  (make-process :name "leetcode list"
-                :buffer "leetcode_list_value" 
-                :command '("leetcode" "list")
-                :sentinel 'leetcode-list-all-sync
-                )
-  )
 
 (defun list-all-sync (process signal)
   "Create a new buffer to show all leetcode programs list."
@@ -71,6 +66,16 @@ STR is a leetcode entry title."
     (goto-char (point-min)))
   )
 
+(defun list-all ()
+  "Async Create a new buffer to show all leetcode programs list."
+  (interactive)
+  (make-process :name "leetcode list"
+                :buffer "leetcode_list_value" 
+                :command '("leetcode" "list")
+                :sentinel 'leetcode-list-all-sync
+                )
+  )
+
 
 (defun pick (n)
   (let ((raw-message (shell-command-to-string (format "leetcode pick %s" n))))
@@ -82,7 +87,7 @@ STR is a leetcode entry title."
   (let (
         (match (concat "^" (number-to-string n)  "\." ".*" "\." leetcode-language "$"))
         )
-    (find-file (car (directory-files "~/.leetcode/code" 'full match)) )
+    (find-file (car (directory-files path 'full match)))
     )
   )
 
@@ -105,7 +110,7 @@ N is a leetcode program number."
 (defun show-next ()
   "Show the next leetcode programs after the current buffer."
   (interactive)
-  (leetcode-show (+ 1 (string-to-number (first (split-string (buffer-name) "\\."))))))
+  (leetcode-show (+ 1 (string-to-number (get-current-buff-num)))))
 
 (defun submit ()
   "Submit the current buffer solution."
@@ -113,7 +118,7 @@ N is a leetcode program number."
   (let (
         (the-buffer-name (buffer-name))
         )
-    (exec "exec" (first (split-string (buffer-name) "\\.")))
+    (exec "exec" (get-current-buff-num))
     ))
 
 
@@ -146,15 +151,11 @@ N is a leetcode program number."
                 )
   )
 
-(defun get-current-buff-num ()
-  "Convert current buffer name to number"
-  (first (split-string (buffer-name) "\\."))
-  )
 
 (defun test ()
-  "Submit the current buffer solution.
+  "Submit the current buffer solution."
   (interactive)
-  (exec "exec" (get-current-buff-num))
+  (exec "test" (get-current-buff-num))
   )
 
 )
