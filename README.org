@@ -5,7 +5,9 @@ This is an Emacs plugin that makes it easier and faster to write leetcode progra
 ** Prerequisites
 + leetcode-cli
 
-This tool is based on leetcode-cli, You can install the latest version through its [[https://github.com/skygragon/leetcode-cli][website]].
+This tool is based on leetcode-cli, _You can install the latest version through its [[https://github.com/skygragon/leetcode-cli][website]]_.
+
+*The backend leetcode-cli changed to other implement* [[https://github.com/clearloop/leetcode-cli][github]] 
 
 + ctable
 This tool uses the emacs package =ctable= to show all leetcode issues,
