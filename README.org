@@ -29,27 +29,34 @@ you can download it from [[https://github.com/Malabarba/names][github]] or insta
   (add-to-list 'load-path (expand-file-name "~/.emacs.d/lisp/leetcode"))
 #+END_SRC
 ** Configuration
-you can use the 'use-package', there are two configurable variable.
-+ =leetcode-path= : assign the path to save the solution codes
-+ =leetcode-language= : assign the the language of the solutions
+You can use the 'use-package', there is a configurable variable.
++ =leetcode-language= : assign the language of solutions
 
 #+BEGIN_SRC emacs-lisp
 (use-package leetcode
     :config
-    (setq leetcode-path "~/Dropbox/Leetcode/"
-          leetcode-language "java")
+    (setq leetcode-language "java")
 )
 #+END_SRC
+
+*** Change leetcode-cli config
+You will find leetcode-cli config in "~/.leetcode/leetcode.toml"
+
+#+begin_src toml
+  [code]
+  editor = 'cat'
+  lang = 'java'
+#+end_src
+
+You should change editor to 'cat', let leetcode-cli don't open a editor to edit the anwser file.
+
+You can change the answer languary using 'lang' item.
 ** Features
 *** login / logout
-*leetcode-login*:
 
-#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-login.gif"></p>
+New leetcode-cli not provides command to login / logout. You just need login/logout leetcode in Chrome, the leetcode-cli will use the Chrome cookie to access leetcode website.
 
-*leetcode-logout*:
-
-#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-logout.gif"></p>
-*** list all questions
+*** List all questions
 *leetcode-list-all*:
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-list-all.gif"></p>
@@ -58,19 +65,19 @@ you can use the 'use-package', there are two configurable variable.
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-show.gif"></p>
-*** show next question
+*** Show next question
 *leetcode-show-next*:
 
 If you solve the question in order, you can go to the next question through =leetcode-show-next=.
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-show-next.gif"></p>
-*** submit the question answer
+*** Submit the question answer
 *leetcode-submit*:
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-submit.gif"></p>
-*** test the question answer
+*** Test the question answer
 *leetcode-test*:
 
-You can specify a test case to check if the answer is correct.
+Like *leetcode-submit* , you can using *leetcode-test* function to test current buffer using some default test cases.
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-test.gif"></p>
