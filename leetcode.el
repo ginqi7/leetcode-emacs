@@ -22,6 +22,11 @@
   (first (split-string (buffer-name) "\\."))
   )
 
+(defun get-file-name-num (name)
+  "Convert file name to get first number"
+  (string-to-number (first (split-string name "\\.")))
+  )
+
 (defun -split-string (str)
   "Divide a leetcode entry title into 5 columns.
 STR is a leetcode entry title."
@@ -156,6 +161,12 @@ N is a leetcode program number."
   "Submit the current buffer solution."
   (interactive)
   (exec "test" (get-current-buff-num))
+  )
+
+(defun show-local-max-problem ()
+  "Show max item problem saved in local"
+  (interactive)
+  (show (apply #'max (mapcar #'get-file-name-num  (directory-files leetcode-path nil (format "\\.%s$" leetcode-language)))))
   )
 
 )

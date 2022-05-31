@@ -81,3 +81,8 @@ If you solve the question in order, you can go to the next question through =lee
 Like *leetcode-submit* , you can using *leetcode-test* function to test current buffer using some default test cases.
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-test.gif"></p>
+
+*** Quickly jump max index problem in local
+*leetcode-show-local-max-problem*
+
+Use this function, you can quickly jump the max index problem in your local file. You needn't go to your leetcode directory to find last file you handled 
