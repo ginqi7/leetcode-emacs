@@ -84,7 +84,7 @@ STR is a leetcode entry title."
 
 (defun pick (n)
   (let ((raw-message (shell-command-to-string (format "leetcode pick %s" n))))
-    (insert raw-message))
+    (insert (replace-regexp-in-string "\015" "" raw-message)))
   )
 
 (defun edit (n)
