@@ -56,6 +56,11 @@ New leetcode-cli not provides command to login / logout. You just need login/log
 *leetcode-list-all*:
 
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-list-all.gif"></p>
+
+There will hide 🔒 problems.
+
+If you select a problem and click will open the problem code.
+
 *** show a specific question
 *leetcode-show n*:
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
