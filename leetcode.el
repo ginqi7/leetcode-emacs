@@ -158,6 +158,16 @@ STR is a leetcode entry title."
                   :filter #'leetcode--ansi-color-insertion-filter
                   :sentinel 'leetcode--list-all-sync)))
 
+
+(defun leetcode-filter-by-keyword(keyword)
+  "Async Create a new buffer to query leetcode programs list by keyword."
+  (interactive "sProblem keyword: ")
+  (make-process :name "leetcode list"
+                :buffer "leetcode_list_value"
+                :command (list "leetcode" "list" keyword)
+                :filter #'leetcode--ansi-color-insertion-filter
+                :sentinel 'leetcode--list-all-sync))
+
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
 N is a leetcode program number."

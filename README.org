@@ -78,6 +78,10 @@ You can filter problems by difficulty:
 You can filter problems by tag:
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-filter-by-tag.gif"></p>
 
+*** Filter questions by keyword
+You can filter problems by keyword:
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-filter-by-keyword.gif"></p>
+
 
 *** Show a specific question
 *leetcode-show n*:
