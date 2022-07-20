@@ -147,6 +147,17 @@ STR is a leetcode entry title."
                   :sentinel 'leetcode--list-all-sync)
     ))
 
+(defun leetcode-filter-by-tag()
+  "Async Create a new buffer to query leetcode programs list by tag."
+  (interactive)
+  (let* ((tag (completing-read "Select Leetcode tag: " '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive")))
+        (option (downcase (string-replace " " "-" tag))))
+    (make-process :name "leetcode list"
+                  :buffer "leetcode_list_value"
+                  :command (list "leetcode" "list" "-t" option)
+                  :filter #'leetcode--ansi-color-insertion-filter
+                  :sentinel 'leetcode--list-all-sync)))
+
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
 N is a leetcode program number."

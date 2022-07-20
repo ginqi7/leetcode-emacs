@@ -73,6 +73,12 @@ If you select a problem and click or press `return` will open the problem code.
 You can filter problems by difficulty:
 #+HTML: <p align="center"><img width="600px" src="./resources/leetcode-filter-by-difficulty.gif"></p>
 
+
+*** Filter questions by tag
+You can filter problems by tag:
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-filter-by-tag.gif"></p>
+
+
 *** Show a specific question
 *leetcode-show n*:
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
