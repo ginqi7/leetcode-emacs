@@ -47,6 +47,11 @@ You will find leetcode-cli config in "~/.leetcode/leetcode.toml"
 You should change editor to 'cat', let leetcode-cli don't open a editor to edit the anwser file.
 
 You can change the answer languary using 'lang' item.
+*** Configurable Variable
+There are some variable
+#+begin_src emacs-lisp
+leetcode-hide-no-auth-problems ;; Whether to hide topics that do not have permission, default value is t
+#+end_src
 ** Features
 *** login / logout
 
@@ -59,9 +64,16 @@ New leetcode-cli not provides command to login / logout. You just need login/log
 
 There will hide 🔒 problems.
 
-If you select a problem and click will open the problem code.
+If you select a problem and click or press `return` will open the problem code.
 
-*** show a specific question
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-click.gif"></p>
+
+*** Filter questions by difficulty
+
+You can filter problems by difficulty:
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-filter-by-difficulty.gif"></p>
+
+*** Show a specific question
 *leetcode-show n*:
 show a description and generate a code's template of a specific question. The parameter of function is the question's index number.
 

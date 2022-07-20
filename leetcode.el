@@ -134,6 +134,19 @@ STR is a leetcode entry title."
                 :filter #'leetcode--ansi-color-insertion-filter
                 :sentinel 'leetcode--list-all-sync))
 
+
+(defun leetcode-filter-by-difficulty ()
+  "Async Create a new buffer to query leetcode programs list by difficulty."
+  (interactive)
+  (let* ((difficulty (completing-read "Select Leetcode Difficulty: " '("All" "Easy" "Medium" "Hard")))
+        (option (downcase (substring difficulty 0 1))))
+    (make-process :name "leetcode list"
+                  :buffer "leetcode_list_value"
+                  :command (list "leetcode" "list" "-q" option)
+                  :filter #'leetcode--ansi-color-insertion-filter
+                  :sentinel 'leetcode--list-all-sync)
+    ))
+
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
 N is a leetcode program number."
