@@ -1,4 +1,3 @@
-;; -*- lexical-binding: t -*-
 ;;; leetcode.el --- a plugin for leetcodeme
 ;;; Commentary:
 ;;; code:
@@ -66,7 +65,7 @@ STR is a leetcode entry title."
 
 (defun leetcode-add-click-hook ()
   (goto-char (point-min))
-  (lexical-let ((cp (ctbl:cp-get-component)))
+  (let ((cp (ctbl:cp-get-component)))
     (ctbl:cp-add-click-hook 
      cp 
      (lambda ()
