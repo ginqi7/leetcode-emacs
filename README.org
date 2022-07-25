@@ -109,3 +109,8 @@ Like *leetcode-submit* , you can using *leetcode-test* function to test current 
 *leetcode-show-local-max-problem*
 
 Use this function, you can quickly jump the max index problem in your local file. You needn't go to your leetcode directory to find last file you handled 
+
+*** Interactively filter and select problem and open it
+*leetcode-interactive*
+You could filter and select and open problem interactively.
+#+HTML: <p align="center"><img width="600px" src="./resources/leetcode-interactive.gif"></p>
