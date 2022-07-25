@@ -75,7 +75,7 @@ STR is a leetcode entry title."
   "Create a new buffer to show all leetcode programs list."
   (when (memq (process-status process) '(exit signal))
     (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
-           (rows (leetcode--parse-leetcode-list (leetcode--buffer-whole-string "leetcode_list_value")))
+           (rows (leetcode--parse-leetcode-list (process-get process 'output)))
            (async-model ; wrapping a large data in async-data-model
             (ctbl:async-model-wrapper rows)))
 
@@ -105,10 +105,15 @@ STR is a leetcode entry title."
   (let ((match (concat "^" (number-to-string n)  "\." ".*" "\." leetcode-language "$")))
     (find-file (car (directory-files leetcode-path 'full match)))))
 
+(defun remove-unuseful (str)
+  "Remove some unuseful char in STR"
+  (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply string)))
+
+
+
 (defun leetcode--ansi-color-insertion-filter (proc string)
   (when (buffer-live-p (process-buffer proc))
-    (with-current-buffer (process-buffer proc)
-      (insert (ansi-color-apply string)))))
+    (process-put proc 'output (concat (process-get proc 'output) (remove-unuseful string)))))
 
 (defun leetcode--exec (action num)
   "Execute leetcode action"
@@ -135,6 +140,27 @@ STR is a leetcode entry title."
                 :sentinel 'leetcode--list-all-sync))
 
 
+(defun leetcode--list-all-interactive (process signal)
+  (when (memq (process-status process) '(exit signal))
+    (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
+           (rows (leetcode--parse-leetcode-list (process-get process 'output)))
+           (candidates (mapcar (lambda (row) (format "%s: %s (%s)" (second row) (third row) (nth 3 row))) rows))
+           (selected-item (completing-read "select leetcode-problems: " candidates))
+           (seleted-num (car (split-string selected-item ":"))))
+      (leetcode-show (string-to-number seleted-num))
+      (kill-buffer "leetcode_list_value")
+      )))
+
+(defun leetcode-query-all-interactive ()
+  "Async interactively select all leetcode programs list and show it."
+  (interactive)
+  (make-process :name "leetcode list"
+                :buffer "leetcode_list_value"
+                :command '("leetcode" "list")
+                :filter #'leetcode--ansi-color-insertion-filter
+                :sentinel 'leetcode--list-all-interactive))
+
+
 (defun leetcode-filter-by-difficulty ()
   "Async Create a new buffer to query leetcode programs list by difficulty."
   (interactive)
@@ -147,6 +173,17 @@ STR is a leetcode entry title."
                   :sentinel 'leetcode--list-all-sync)
     ))
 
+(defun leetcode-filter-by-difficulty-interactive ()
+  "Async interactively select leetcode programs by difficulty and show it."
+  (interactive)
+  (let* ((difficulty (completing-read "Select Leetcode Difficulty: " '("All" "Easy" "Medium" "Hard")))
+        (option (downcase (substring difficulty 0 1))))
+    (make-process :name "leetcode list"
+                  :buffer "leetcode_list_value"
+                  :command (list "leetcode" "list" "-q" option)
+                  :filter #'leetcode--ansi-color-insertion-filter
+                  :sentinel 'leetcode--list-all-interactive)))
+
 (defun leetcode-filter-by-tag()
   "Async Create a new buffer to query leetcode programs list by tag."
   (interactive)
@@ -157,6 +194,17 @@ STR is a leetcode entry title."
                   :command (list "leetcode" "list" "-t" option)
                   :filter #'leetcode--ansi-color-insertion-filter
                   :sentinel 'leetcode--list-all-sync)))
+
+(defun leetcode-filter-by-tag-interactive()
+  "Async interactively select leetcode programs by tag and show it."
+  (interactive)
+  (let* ((tag (completing-read "Select Leetcode tag: " '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive")))
+        (option (downcase (string-replace " " "-" tag))))
+    (make-process :name "leetcode list"
+                  :buffer "leetcode_list_value"
+                  :command (list "leetcode" "list" "-t" option)
+                  :filter #'leetcode--ansi-color-insertion-filter
+                  :sentinel 'leetcode--list-all-interactive)))
 
 
 (defun leetcode-filter-by-keyword(keyword)
@@ -200,6 +248,17 @@ N is a leetcode program number."
   "Show max item problem saved in local"
   (interactive)
   (show (apply #'max (mapcar #'get-file-name-num  (directory-files leetcode-path nil (format "\\.%s$" leetcode-language))))))
+
+(defun leetcode-interactive ()
+  "Interactively select leetcode problem and show it"
+  (interactive)
+  (let ((selected-item (completing-read "Choose a way to find the problem :"
+                   '("query all"
+                     "query by difficulty"
+                     "query by tag"))))
+    (cond ((string= "query all" selected-item) (leetcode-query-all-interactive))
+          ((string= "query by difficulty" selected-item) (leetcode-filter-by-difficulty-interactive))
+          ((string= "query by tag" selected-item) (leetcode-filter-by-tag-interactive)))))
 
 
 (provide 'leetcode)
