@@ -23,7 +23,7 @@
 
 (defun get-file-name-num (name)
   "Convert file name to get first number"
-  (string-to-number (first (split-string name "\\."))))
+  (string-to-number (cl-first (split-string name "\\."))))
 
 
 (defun leetcode--parse-leetcode-entry (str)
@@ -38,13 +38,13 @@ STR is a leetcode entry title."
     (if (string-match "[0-9]+" (car the-list))
         (setq number (car the-list)
               title (mapconcat 'identity (cl-subseq the-list 1 (- (length the-list) 3)) " "))
-      (setq acceped (car the-list)
+      (setq accepted (car the-list)
           number (nth 1 the-list)
               title (mapconcat 'identity (cl-subseq the-list 2 (- (length the-list) 3)) " ")))
     (setq difficulty (nth (- (length the-list) 3) the-list)
           frequency (concat (nth (- (length the-list) 2) the-list) (nth (- (length the-list) 1) the-list)))
     
-    (list acceped number title difficulty frequency)))
+    (list accepted number title difficulty frequency)))
 
 (defun leetcode--entry-filter (lst)
   (if leetcode-hide-no-auth-problems
@@ -64,8 +64,8 @@ STR is a leetcode entry title."
                     :align 'left))
 
 (defun leetcode-add-click-hook ()
-  (goto-line 0)
-  (lexical-let ((cp (ctbl:cp-get-component)))
+  (goto-char (point-min))
+  (let ((cp (ctbl:cp-get-component)))
     (ctbl:cp-add-click-hook 
      cp 
      (lambda ()
@@ -247,7 +247,7 @@ N is a leetcode program number."
 (defun show-local-max-problem ()
   "Show max item problem saved in local"
   (interactive)
-  (show (apply #'max (mapcar #'get-file-name-num  (directory-files leetcode-path nil (format "\\.%s$" leetcode-language))))))
+  (leetcode-show (apply #'max (mapcar #'get-file-name-num  (directory-files leetcode-path nil (format "\\.%s$" leetcode-language))))))
 
 (defun leetcode-interactive ()
   "Interactively select leetcode problem and show it"
