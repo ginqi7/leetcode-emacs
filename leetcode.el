@@ -161,7 +161,7 @@ N is leetcode number."
 
 (defun remove-unuseful (str)
   "Remove some unuseful char in STR."
-  (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply string)))
+  (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply str)))
 
 
 (defun leetcode--ansi-color-insertion-filter (proc string)
