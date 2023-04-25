@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;; 
+;;
 
 ;;; Code:
 
@@ -123,7 +123,7 @@ SIGNAL is current running process' signal."
            (rows
             (leetcode--parse-leetcode-list
              (process-get process 'output)))
-           (async-model ; wrapping a large data in async-data-model
+           (async-model    ; wrapping a large data in async-data-model
             (ctbl:async-model-wrapper rows)))
 
       (kill-buffer "leetcode_list_value")
@@ -150,7 +150,7 @@ N is leetcode number."
     (insert (replace-regexp-in-string "\015" "" raw-message))))
 
 (defun leetcode--edit (n)
-"Run =leetcode edit= to edit a leetcode problem.
+  "Run =leetcode edit= to edit a leetcode problem.
 N is leetcode number."
   (shell-command-to-string (format "leetcode edit %s" n))
   (let ((match
@@ -169,10 +169,11 @@ N is leetcode number."
 PROC is current running process.
 STRING is current process' output."
   (when (buffer-live-p (process-buffer proc))
-    (process-put proc 'output
-                 (concat
-                  (process-get proc 'output)
-                  (remove-unuseful string)))))
+    (with-current-buffer (process-buffer proc)
+      (let ((output (remove-unuseful string)))
+        (process-put proc 'output
+                     (concat (process-get proc 'output) output))
+        (insert output)))))
 
 (defun leetcode--exec (action num)
   "Execute leetcode action.
