@@ -35,6 +35,10 @@
 
 (defvar leetcode-top100 '("1. Two Sum" "2. Add Two Numbers" "3. Longest Substring Without Repeating Characters" "4. Median of Two Sorted Arrays" "5. Longest Palindromic Substring" "11. Container With Most Water" "13. Roman to Integer" "14. Longest Common Prefix" "15. 3Sum" "17. Letter Combinations of a Phone Number" "19. Remove Nth Node From End of List" "20. Valid Parentheses" "21. Merge Two Sorted Lists" "22. Generate Parentheses" "23. Merge k Sorted Lists" "24. Swap Nodes in Pairs" "25. Reverse Nodes in k-Group" "31. Next Permutation" "32. Longest Valid Parentheses" "33. Search in Rotated Sorted Array" "34. Find First and Last Position of Element in Sorted Array" "35. Search Insert Position" "39. Combination Sum" "41. First Missing Positive" "42. Trapping Rain Water" "45. Jump Game II" "46. Permutations" "48. Rotate Image" "49. Group Anagrams" "51. N-Queens" "53. Maximum Subarray" "54. Spiral Matrix" "55. Jump Game" "56. Merge Intervals" "62. Unique Paths" "64. Minimum Path Sum" "70. Climbing Stairs" "72. Edit Distance" "73. Set Matrix Zeroes" "74. Search a 2D Matrix" "75. Sort Colors" "76. Minimum Window Substring" "78. Subsets" "79. Word Search" "84. Largest Rectangle in Histogram" "94. Binary Tree Inorder Traversal" "98. Validate Binary Search Tree" "101. Symmetric Tree" "102. Binary Tree Level Order Traversal" "104. Maximum Depth of Binary Tree" "105. Construct Binary Tree from Preorder and Inorder Traversal" "114. Flatten Binary Tree to Linked List" "118. Pascal's Triangle" "121. Best Time to Buy and Sell Stock" "124. Binary Tree Maximum Path Sum" "128. Longest Consecutive Sequence" "131. Palindrome Partitioning" "136. Single Number" "138. Copy List with Random Pointer" "139. Word Break" "141. Linked List Cycle" "142. Linked List Cycle II" "146. LRU Cache" "148. Sort List" "152. Maximum Product Subarray" "153. Find Minimum in Rotated Sorted Array" "155. Min Stack" "160. Intersection of Two Linked Lists" "169. Majority Element" "189. Rotate Array" "198. House Robber" "199. Binary Tree Right Side View" "200. Number of Islands" "206. Reverse Linked List" "207. Course Schedule" "208. Implement Trie (Prefix Tree)" "215. Kth Largest Element in an Array" "226. Invert Binary Tree" "230. Kth Smallest Element in a BST" "234. Palindrome Linked List" "236. Lowest Common Ancestor of a Binary Tree" "238. Product of Array Except Self" "239. Sliding Window Maximum" "240. Search a 2D Matrix II" "283. Move Zeroes" "287. Find the Duplicate Number" "295. Find Median from Data Stream" "300. Longest Increasing Subsequence" "322. Coin Change" "347. Top K Frequent Elements" "394. Decode String" "416. Partition Equal Subset Sum" "438. Find All Anagrams in a String" "543. Diameter of Binary Tree" "560. Subarray Sum Equals K" "567. Permutation in String" "704. Binary Search" "739. Daily Temperatures" "994. Rotting Oranges" "1143. Longest Common Subsequence"))
 
+(defvar leetcode-difficulties '("All" "Easy" "Medium" "Hard"))
+
+(defvar leetcode-tags '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive"))
+
 (defun leetcode--buffer-whole-string (buffer)
   "Get String without properties from other buffer.
 BUFFER is the buffer name"
@@ -276,7 +280,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((difficulty
           (completing-read "Select Leetcode Difficulty: "
-                           '("All" "Easy" "Medium" "Hard")))
+                           leetcode-difficulties))
          (option (downcase (substring difficulty 0 1))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
@@ -289,7 +293,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((difficulty
           (completing-read "Select Leetcode Difficulty: "
-                           '("All" "Easy" "Medium" "Hard")))
+                           leetcode-difficulties))
          (option (downcase (substring difficulty 0 1))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
@@ -303,7 +307,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((difficulty
           (completing-read "Select Leetcode Difficulty: "
-                           '("All" "Easy" "Medium" "Hard")))
+                           leetcode-difficulties))
          (option (downcase (substring difficulty 0 1))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
@@ -316,7 +320,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((tag
           (completing-read "Select Leetcode tag: "
-                           '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive")))
+                           leetcode-tags))
          (option (downcase (string-replace " " "-" tag))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
@@ -329,7 +333,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((tag
           (completing-read "Select Leetcode tag: "
-                           '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive")))
+                           leetcode-tags))
          (option (downcase (string-replace " " "-" tag))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
@@ -342,7 +346,7 @@ SIGNAL is current running process' signal."
   (interactive)
   (let* ((tag
           (completing-read "Select Leetcode tag: "
-                           '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive")))
+                           leetcode-tags))
          (option (downcase (string-replace " " "-" tag))))
     (make-process :name "leetcode list"
                   :buffer "leetcode_list_value"
