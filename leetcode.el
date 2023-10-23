@@ -438,13 +438,12 @@ N is a leetcode program number."
 (defun leetcode-top100-random ()
   "Leetcode top 100 random."
   (interactive)
-  (let* ((leetcode-question
-          (nth (random 100) leetcode-top100))
+  (let* ((leetcode-question (nth (random 100) leetcode-top100))
          (leetcode-num
           (car (string-split leetcode-question "\\." t " "))))
     (print leetcode-question)
     (leetcode-show (string-to-number leetcode-num)))
-  )
+  leetcode-question)
 
 (defun leetcode-get-current-description ()
   "Leetcode get description of current problem."
