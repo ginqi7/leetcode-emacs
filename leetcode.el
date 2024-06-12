@@ -24,7 +24,7 @@
 
 ;;; Code:
 
-(require 'ctable)
+(require 'ctable nil t)
 (require 'cl-lib)
 
 (defvar leetcode-path "~/.leetcode/code")
@@ -61,7 +61,6 @@ BUFFER is the buffer name"
   "Convert file name to get first number.
 NAME is leetcode problem's file name."
   (string-to-number (cl-first (split-string name "\\."))))
-
 
 (defun leetcode--parse-leetcode-entry (str)
   "Divide a leetcode entry title into 5 columns.
@@ -175,7 +174,6 @@ N is leetcode number."
   "Remove some unuseful char in STR."
   (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply str)))
 
-
 (defun leetcode--ansi-color-insertion-filter (proc string)
   "Parse leetcode command output put it in process' properties.
 PROC is current running process.
@@ -213,7 +211,6 @@ NUM is leetcode problem's number."
                 :filter #'leetcode--ansi-color-insertion-filter
                 :sentinel 'leetcode--list-all-sync))
 
-
 (defun leetcode--random (process signal)
   "Random open a leetcode problem.
 PROCESS is current running process.
@@ -236,8 +233,6 @@ SIGNAL is current running process' signal."
            (seleted-num (car (split-string selected-item ":"))))
       (leetcode-show (string-to-number seleted-num))
       (kill-buffer "leetcode_list_value"))))
-
-
 
 (defun leetcode--list-all-interactive (process signal)
   "List all leetcode in minibuffer.
@@ -280,7 +275,6 @@ SIGNAL is current running process' signal."
                 :filter #'leetcode--ansi-color-insertion-filter
                 :sentinel 'leetcode--random))
 
-
 (defun leetcode-filter-by-difficulty ()
   "Async Create a new buffer to query leetcode programs list by difficulty."
   (interactive)
@@ -306,7 +300,6 @@ SIGNAL is current running process' signal."
                   :command (list "leetcode" "list" "-q" option)
                   :filter #'leetcode--ansi-color-insertion-filter
                   :sentinel 'leetcode-random)))
-
 
 (defun leetcode-filter-by-difficulty-interactive ()
   "Async interactively select leetcode programs by difficulty and show it."
@@ -359,7 +352,6 @@ SIGNAL is current running process' signal."
                   :command (list "leetcode" "list" "-t" option)
                   :filter #'leetcode--ansi-color-insertion-filter
                   :sentinel 'leetcode--list-all-interactive)))
-
 
 (defun leetcode-filter-by-keyword(keyword)
   "Async Create a new buffer to query leetcode programs list by KEYWORD."
@@ -449,7 +441,6 @@ N is a leetcode program number."
   "Leetcode get description of current problem."
   (interactive)
   (leetcode-show (string-to-number (leetcode--get-current-buff-num))))
-
 
 (defun leetcode-open-in-browser ()
   "Open current Leetcode problem in browser."
