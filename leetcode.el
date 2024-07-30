@@ -22,32 +22,69 @@
 
 ;;
 
+;;; Commands:
+;;
+;; Below are complete command list:
+;;
+;;  `leetcode'
+;;    Leetcode main interactive command.
+;;  `leetcode-get-current-description'
+;;    Leetcode get description of current problem.
+;;  `leetcode-show'
+;;    Show leetcode programs message and download file.
+;;  `leetcode-show-next'
+;;    Show the next leetcode programs after the current buffer.
+;;  `leetcode-submit'
+;;    Submit the current buffer solution.
+;;
+;;; Customizable Options:
+;;
+;; Below are customizable option list:
+;;
+;;  `leetcode-language'
+;;    Coding language for leetcode.
+;;    default = "go"
+;;  `leetcode-path'
+;;    The direcotry to save leetcode code files.
+;;    default = "~/.leetcode/code"
+
 ;;; Code:
 
-(require 'ctable nil t)
-(require 'cl-lib)
+(require 'leetcode-object)
+(require 'leetcode-render)
+(require 'leetcode-rest)
 
-(defvar leetcode-path "~/.leetcode/code")
+(defcustom leetcode-language "go"
+  "Coding language for leetcode."
+  :type 'string
+  :group 'leetcode)
 
-(defvar leetcode-language "go")
+(defcustom leetcode-path "~/.leetcode/code"
+  "The direcotry to save leetcode code files."
+  :type 'string
+  :group 'leetcode)
 
-(defvar leetcode-hide-no-auth-problems t)
+(defconst leetcode--lang-extension-alist
+  '(("c" . "c") ("cpp" . "cpp") ("csharp" . "cs")
+    ("dart" . "dart") ("elixir" . "ex") ("erlang" . "erl")
+    ("golang" . "go") ("java" .  "java") ("javascript" . "js")
+    ("kotlin" . "kt") ("php" . "php") ("python" . "py") ("python3" . "py")
+    ("racket" . "rkt") ("ruby" . "rb") ("rust" . "rs")
+    ("scala" . "scala") ("swift" . "swift") ("typescript" . "ts"))
+  "LeetCode programming language extension alist.
+c, cpp, csharp, golang, java, javascript, typescript, kotlin, php, python,
+python3, ruby, rust, scala, swift")
 
-(defvar leetcode-base-url "https://leetcode.com/problems/")
+(defvar leetcode--difficulties '("EASY" "MEDIUM" "HARD")
+  "The LeetCode problem difficulty list.")
 
-(defvar leetcode-top100 '("1. Two Sum" "2. Add Two Numbers" "3. Longest Substring Without Repeating Characters" "4. Median of Two Sorted Arrays" "5. Longest Palindromic Substring" "11. Container With Most Water" "13. Roman to Integer" "14. Longest Common Prefix" "15. 3Sum" "17. Letter Combinations of a Phone Number" "19. Remove Nth Node From End of List" "20. Valid Parentheses" "21. Merge Two Sorted Lists" "22. Generate Parentheses" "23. Merge k Sorted Lists" "24. Swap Nodes in Pairs" "25. Reverse Nodes in k-Group" "31. Next Permutation" "32. Longest Valid Parentheses" "33. Search in Rotated Sorted Array" "34. Find First and Last Position of Element in Sorted Array" "35. Search Insert Position" "39. Combination Sum" "41. First Missing Positive" "42. Trapping Rain Water" "45. Jump Game II" "46. Permutations" "48. Rotate Image" "49. Group Anagrams" "51. N-Queens" "53. Maximum Subarray" "54. Spiral Matrix" "55. Jump Game" "56. Merge Intervals" "62. Unique Paths" "64. Minimum Path Sum" "70. Climbing Stairs" "72. Edit Distance" "73. Set Matrix Zeroes" "74. Search a 2D Matrix" "75. Sort Colors" "76. Minimum Window Substring" "78. Subsets" "79. Word Search" "84. Largest Rectangle in Histogram" "94. Binary Tree Inorder Traversal" "98. Validate Binary Search Tree" "101. Symmetric Tree" "102. Binary Tree Level Order Traversal" "104. Maximum Depth of Binary Tree" "105. Construct Binary Tree from Preorder and Inorder Traversal" "114. Flatten Binary Tree to Linked List" "118. Pascal's Triangle" "121. Best Time to Buy and Sell Stock" "124. Binary Tree Maximum Path Sum" "128. Longest Consecutive Sequence" "131. Palindrome Partitioning" "136. Single Number" "138. Copy List with Random Pointer" "139. Word Break" "141. Linked List Cycle" "142. Linked List Cycle II" "146. LRU Cache" "148. Sort List" "152. Maximum Product Subarray" "153. Find Minimum in Rotated Sorted Array" "155. Min Stack" "160. Intersection of Two Linked Lists" "169. Majority Element" "189. Rotate Array" "198. House Robber" "199. Binary Tree Right Side View" "200. Number of Islands" "206. Reverse Linked List" "207. Course Schedule" "208. Implement Trie (Prefix Tree)" "215. Kth Largest Element in an Array" "226. Invert Binary Tree" "230. Kth Smallest Element in a BST" "234. Palindrome Linked List" "236. Lowest Common Ancestor of a Binary Tree" "238. Product of Array Except Self" "239. Sliding Window Maximum" "240. Search a 2D Matrix II" "283. Move Zeroes" "287. Find the Duplicate Number" "295. Find Median from Data Stream" "300. Longest Increasing Subsequence" "322. Coin Change" "347. Top K Frequent Elements" "394. Decode String" "416. Partition Equal Subset Sum" "438. Find All Anagrams in a String" "543. Diameter of Binary Tree" "560. Subarray Sum Equals K" "567. Permutation in String" "704. Binary Search" "739. Daily Temperatures" "994. Rotting Oranges" "1143. Longest Common Subsequence"))
+(defvar leetcode--statuses '("NOT_STARTED" "TRIED" "AC")
+  "The LeetCode problem status list.")
 
-(defvar leetcode-difficulties '("All" "Easy" "Medium" "Hard"))
-
-(defvar leetcode-tags '("Array" "String" "Hash Table" "Dynamic Programming" "Math" "Sorting" "Depth-First Search" "Greedy" "Database" "Breadth-First Search" "Tree" "Binary Search" "Matrix" "Binary Tree" "Two Pointers" "Bit Manipulation" "Stack" "Design" "Heap (Priority Queue)" "Graph" "Simulation" "Backtracking" "Prefix Sum" "Counting" "Sliding Window" "Linked List" "Union Find" "Monotonic Stack" "Ordered Set" "Recursion" "Trie" "Binary Search Tree" "Enumeration" "Divide and Conquer" "Bitmask" "Queue" "Memoization" "Geometry" "Topological Sort" "Segment Tree" "Game Theory" "Hash Function" "Binary Indexed Tree" "Interactive"))
-
-(defun leetcode--buffer-whole-string (buffer)
-  "Get String without properties from other buffer.
-BUFFER is the buffer name"
-  (with-current-buffer buffer
-    (save-restriction
-      (widen)
-      (buffer-substring-no-properties (point-min) (point-max)))))
+(defun leetcode ()
+  "Leetcode main interactive command."
+  (interactive)
+  (leetcode--query 0 (window-body-height) (make-instance 'leetcode-query-info)))
 
 (defun leetcode--get-current-buff-num ()
   "Convert current buffer name to number."
@@ -57,322 +94,155 @@ BUFFER is the buffer name"
   "Convert current buffer name to problem name."
   (nth 1 (split-string (buffer-name) "\\.")))
 
-(defun get-file-name-num (name)
+(defun leetcode--get-file-name-num (name)
   "Convert file name to get first number.
 NAME is leetcode problem's file name."
   (string-to-number (cl-first (split-string name "\\."))))
 
-(defun leetcode--parse-leetcode-entry (str)
-  "Divide a leetcode entry title into 5 columns.
-STR is a leetcode entry title."
-  (let ((the-list (split-string str " +\\|\\[\\|\\]" t))
-        (accepted)
-        (number)
-        (title)
-        (difficulty)
-        (frequency))
-    (if (string-match "[0-9]+" (car the-list))
-        (setq number
-              (car the-list)
-              title
-              (mapconcat 'identity
-                         (cl-subseq the-list 1
-                                    (- (length the-list) 3))
-                         " "))
-      (setq accepted
-            (car the-list)
-            number
-            (nth 1 the-list)
-            title
-            (mapconcat 'identity
-                       (cl-subseq the-list 2 (- (length the-list) 3))
-                       " ")))
-    (setq difficulty
-          (nth (- (length the-list) 3) the-list)
-          frequency
-          (concat
-           (nth (- (length the-list) 2) the-list)
-           (nth (- (length the-list) 1) the-list)))
+(defun leetcode--get-language-extension (language)
+"Leetcode Get Language Extension.
+LANGUAGE: language for solving problem."
+  (let ((extention (alist-get language leetcode--lang-extension-alist nil nil #'equal)))
+    (if extention
+	extention
+      (error "Not Support: %s" language))))
 
-    (list accepted number title difficulty frequency)))
+(defun leetcode--query (skip limit query-info-ins)
+"Query LeetCode problems.
+SKIP: number for skip.
+LIMIT number for limit.:
+QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (let* ((query-info-json
+	  (json-encode
+	   (leetcode-object-to-hashtable query-info-ins)))
+	 (problemset-question-list-json
+	  (leetcode-rest-problemset-question-list skip limit query-info-json))
+	 (session-progress-json (leetcode-rest-session-progress))
+	 (session-progress-ins (leetcode-object-json-convert 'leetcode-session-progress session-progress-json)))
+    (leetcode-render--page
+     (leetcode-object-json-to-problem-list-ins problemset-question-list-json)
+     query-info-ins
+     session-progress-ins)))
 
-(defun leetcode--entry-filter (lst)
-  "Filter leetcode list.
-if 'leetcode-hide-no-auth-problems' is t
-LST is leetcode problem list."
-  (if leetcode-hide-no-auth-problems (not (string= (car lst) "🔒")) t))
+(defun leetcode--query-by-difficulty (leetcode-query-info-ins)
+"Add difficulty to leetcode-query-info-ins and Query problems.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (eieio-oset leetcode-query-info-ins 'difficulty
+	      (completing-read "Select a difficulty: " leetcode--difficulties))
+  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
 
-(defun leetcode--parse-leetcode-list (str)
-  "Divide a leetcode entry title into 5 columns.
-STR is a leetcode entry title."
-  (seq-filter
-   #'leetcode--entry-filter
-   (mapcar #'leetcode--parse-leetcode-entry
-           (split-string str "\n+" t))))
+(defun leetcode--query-by-searchKeywords (leetcode-query-info-ins)
+  "Add searchKeywords to leetcode-query-info-ins and Query problems.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (eieio-oset leetcode-query-info-ins 'searchKeywords
+	      (read-string "Input some keywords: "))
+  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
 
-(defun leetcode--create-cmodel (title)
-  "Create cmodel by title string.
-TITLE is a ctable title string."
-  (make-ctbl:cmodel :title  title :align 'left))
+(defun leetcode--query-by-status (leetcode-query-info-ins)
+  "Add status to leetcode-query-info-ins and Query problems.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (eieio-oset leetcode-query-info-ins 'status
+	      (completing-read "Select a status: " leetcode--statuses))
+  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
 
-(defun leetcode-add-click-hook ()
-  "Add click function on leetcode ctable."
-  (goto-char (point-min))
-  (let ((cp (ctbl:cp-get-component)))
-    (ctbl:cp-add-click-hook
-     cp
-     (lambda ()
-       (leetcode-show
-        (string-to-number (nth 1 (ctbl:cp-get-selected-data-row cp))))))))
+(defun leetcode--query-by-tags (leetcode-query-info-ins)
+  "Add tags to leetcode-query-info-ins and Query problems.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (unless leetcode--tags
+    (setq leetcode--tags
+	  (mapcar
+	   (lambda (hashtable)
+	     (leetcode-object-hashtable-convert 'leetcode-tag hashtable))
+	   (json-parse-string (leetcode-rest-question-tag-list)))))
+  (let ((selected-tags
+	 (leetcode-object-completing-read-multiple "Select some tags: " leetcode--tags 'name)))
+    (eieio-oset leetcode-query-info-ins 'tags
+		(mapcar
+		 (lambda (tag) (eieio-oref tag 'slug))
+		 selected-tags))
+    (leetcode--query 0 (window-body-height) leetcode-query-info-ins)))
 
-(defun leetcode--list-all-sync (process signal)
-  "Create a new buffer to show all leetcode programs list.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
-  (when (memq (process-status process) '(exit signal))
-    (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
-           (rows
-            (leetcode--parse-leetcode-list
-             (process-get process 'output)))
-           (async-model    ; wrapping a large data in async-data-model
-            (ctbl:async-model-wrapper rows)))
+(defun leetcode--query-next-page (leetcode-page-info-ins leetcode-query-info-ins)
+"Leetcode Query Next Page.
+LEETCODE-PAGE-INFO-INS: an object make instance by class \='leetcode-page-info.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (let ((skip
+	 (leetcode--oref-with-default leetcode-page-info-ins 'skip))
+	(limit
+	 (leetcode--oref-with-default leetcode-page-info-ins 'limit))
+	(hasMore
+	 (leetcode--oref-with-default leetcode-page-info-ins 'hasMore)))
+    (if hasMore
+	(leetcode--query
+	 (+ skip limit)
+	 limit leetcode-query-info-ins)
+      (message "There is no more next page."))))
 
-      (kill-buffer "leetcode_list_value")
-      (switch-to-buffer mode-buffer)
-      (erase-buffer)
-      (ctbl:create-table-component-region
-       :model (make-ctbl:model
-               :column-model (mapcar 'leetcode--create-cmodel
-                                     (list "Accepted"
-                                           "Number"
-                                           "Title"
-                                           "Difficulty"
-                                           "Frequency"))
-               :data async-model)))
-    (leetcode-add-click-hook)
-    (setq buffer-read-only nil)
-    (goto-char (point-min))))
+(defun leetcode--query-previous-page (leetcode-page-info-ins leetcode-query-info-ins)
+"Leetcode Query Previous Page.
+LEETCODE-PAGE-INFO-INS: an object make instance by class \='leetcode-page-info.
+LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
+  (let ((skip
+	 (leetcode--oref-with-default leetcode-page-info-ins 'skip))
+	(limit
+	 (leetcode--oref-with-default leetcode-page-info-ins 'limit)))
+    (if (>= (- skip limit) 0)
+	(leetcode--query
+	 (- skip limit)
+	 limit leetcode-query-info-ins)
+      (message "There is no a previous page."))))
 
-(defun leetcode--pick (n)
-  "Run =leetcode pick= to select a leetcode problem.
-N is leetcode number."
-  (let ((raw-message
-         (shell-command-to-string (format "leetcode pick %s" n))))
-    (insert (replace-regexp-in-string "\015" "" raw-message))))
-
-(defun leetcode--edit (n)
-  "Run =leetcode edit= to edit a leetcode problem.
-N is leetcode number."
-  (shell-command-to-string (format "leetcode edit %s" n))
-  (let ((match
-         (concat "^"
-                 (number-to-string n)
-                 "\." ".*" "\." leetcode-language "$")))
-    (find-file (car (directory-files leetcode-path 'full match)))))
-
-(defun remove-unuseful (str)
-  "Remove some unuseful char in STR."
-  (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply str)))
-
-(defun leetcode--ansi-color-insertion-filter (proc string)
-  "Parse leetcode command output put it in process' properties.
-PROC is current running process.
-STRING is current process' output."
-  (when (buffer-live-p (process-buffer proc))
-    (with-current-buffer (process-buffer proc)
-      (let ((output (remove-unuseful string)))
-        (process-put proc 'output
-                     (concat (process-get proc 'output) output))
-        (insert output)))))
-
-(defun leetcode--exec (action num)
-  "Execute leetcode action.
-ACTION is leetcode shell optons.
-NUM is leetcode problem's number."
-  (let ((mode-buffer (get-buffer-create "*leetcode-result*")))
-    (delete-other-windows)
-    (split-window-right)
-    (other-window 1)
-    (switch-to-buffer mode-buffer)
-    (erase-buffer)
-    (other-window 1))
-
-  (make-process :name "leetcode exec"
-                :buffer "*leetcode-result*"
-                :command `("leetcode" ,action ,num)
-                :filter #'leetcode--ansi-color-insertion-filter))
-
-(defun leetcode-list-all ()
-  "Async Create a new buffer to show all leetcode programs list."
+(defun leetcode-get-current-description ()
+  "Leetcode get description of current problem."
   (interactive)
-  (make-process :name "leetcode list"
-                :buffer "leetcode_list_value"
-                :command '("leetcode" "list")
-                :filter #'leetcode--ansi-color-insertion-filter
-                :sentinel 'leetcode--list-all-sync))
+  (leetcode-show (string-to-number (leetcode--get-current-buff-num))))
 
-(defun leetcode--random (process signal)
-  "Random open a leetcode problem.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
-  (when (memq (process-status process) '(exit signal))
-    (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
-           (rows
-            (leetcode--parse-leetcode-list
-             (process-get process 'output)))
-           (candidates
-            (mapcar
-             (lambda (row)
-               (format "%s: %s (%s)"
-                       (second row)
-                       (third row)
-                       (nth 3 row)))
-             rows))
-           (selected-item
-            (nth (random (length candidates)) candidates))
-           (seleted-num (car (split-string selected-item ":"))))
-      (leetcode-show (string-to-number seleted-num))
-      (kill-buffer "leetcode_list_value"))))
+(defun leetcode-open-problem-code (problem)
+"Leetcode Open Problem Code.
+PROBLEM: Object instance for class \='leetcode-problem."
+  (let* ((base-file-name
+	  (concat
+	   (leetcode--oref-with-default problem 'frontendQuestionId)
+	   "."
+	   (leetcode--oref-with-default problem 'titleSlug)))
+	 (file-name
+	  (concat
+	   (file-name-concat leetcode-path base-file-name)
+	   "."
+	   (leetcode--get-language-extension leetcode-language))))
 
-(defun leetcode--list-all-interactive (process signal)
-  "List all leetcode in minibuffer.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
-  (when (memq (process-status process) '(exit signal))
-    (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
-           (rows
-            (leetcode--parse-leetcode-list
-             (process-get process 'output)))
-           (candidates
-            (mapcar
-             (lambda (row)
-               (format "%s: %s (%s)"
-                       (second row)
-                       (third row)
-                       (nth 3 row)))
-             rows))
-           (selected-item
-            (completing-read "select leetcode-problems: " candidates))
-           (seleted-num (car (split-string selected-item ":"))))
-      (leetcode-show (string-to-number seleted-num))
-      (kill-buffer "leetcode_list_value"))))
+    (unless (file-exists-p  file-name)
+      (find-file file-name)
+      (insert
+       (leetcode-rest-question-editor-data
+	(leetcode--oref-with-default problem 'titleSlug)
+	leetcode-language)))
+    (find-file file-name)))
 
-(defun leetcode-query-all-interactive ()
-  "Async interactively select all leetcode programs list and show it."
-  (interactive)
-  (make-process :name "leetcode list"
-                :buffer "leetcode_list_value"
-                :command '("leetcode" "list")
-                :filter #'leetcode--ansi-color-insertion-filter
-                :sentinel 'leetcode--list-all-interactive))
-
-(defun leetcode-random ()
-  "Random show a leetcode question."
-  (interactive)
-  (make-process :name "leetcode list"
-                :buffer "leetcode_list_value"
-                :command '("leetcode" "list")
-                :filter #'leetcode--ansi-color-insertion-filter
-                :sentinel 'leetcode--random))
-
-(defun leetcode-filter-by-difficulty ()
-  "Async Create a new buffer to query leetcode programs list by difficulty."
-  (interactive)
-  (let* ((difficulty
-          (completing-read "Select Leetcode Difficulty: "
-                           leetcode-difficulties))
-         (option (downcase (substring difficulty 0 1))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-q" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode--list-all-sync)))
-
-(defun leetcode-random-by-difficulty ()
-  "Select a difficulty and random show a leetcode question."
-  (interactive)
-  (let* ((difficulty
-          (completing-read "Select Leetcode Difficulty: "
-                           leetcode-difficulties))
-         (option (downcase (substring difficulty 0 1))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-q" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode-random)))
-
-(defun leetcode-filter-by-difficulty-interactive ()
-  "Async interactively select leetcode programs by difficulty and show it."
-  (interactive)
-  (let* ((difficulty
-          (completing-read "Select Leetcode Difficulty: "
-                           leetcode-difficulties))
-         (option (downcase (substring difficulty 0 1))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-q" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode--list-all-interactive)))
-
-(defun leetcode-filter-by-tag()
-  "Async Create a new buffer to query leetcode programs list by tag."
-  (interactive)
-  (let* ((tag
-          (completing-read "Select Leetcode tag: "
-                           leetcode-tags))
-         (option (downcase (string-replace " " "-" tag))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-t" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode--list-all-sync)))
-
-(defun leetcode-random-by-tag()
-  "Select a tag and show a question randomly."
-  (interactive)
-  (let* ((tag
-          (completing-read "Select Leetcode tag: "
-                           leetcode-tags))
-         (option (downcase (string-replace " " "-" tag))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-t" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode--random)))
-
-(defun leetcode-filter-by-tag-interactive()
-  "Async interactively select leetcode programs by tag and show it."
-  (interactive)
-  (let* ((tag
-          (completing-read "Select Leetcode tag: "
-                           leetcode-tags))
-         (option (downcase (string-replace " " "-" tag))))
-    (make-process :name "leetcode list"
-                  :buffer "leetcode_list_value"
-                  :command (list "leetcode" "list" "-t" option)
-                  :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode--list-all-interactive)))
-
-(defun leetcode-filter-by-keyword(keyword)
-  "Async Create a new buffer to query leetcode programs list by KEYWORD."
-  (interactive "sProblem keyword: ")
-  (make-process :name "leetcode list"
-                :buffer "leetcode_list_value"
-                :command (list "leetcode" "list" keyword)
-                :filter #'leetcode--ansi-color-insertion-filter
-                :sentinel 'leetcode--list-all-sync))
+(defun leetcode--show (problem)
+"Show problem by \='leetcode-problem ojbect.
+PROBLEM: an object instance for \='leetcode-problem."
+  (leetcode-open-problem-code problem)
+  (leetcode-render-question-content
+     (leetcode-rest-question-content
+      (leetcode--oref-with-default problem 'titleSlug))))
 
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
 N is a leetcode program number."
   (interactive "nProgram Number: ")
-  (delete-other-windows)
-  (let ((mode-buffer (get-buffer-create "*leetcode-description*")))
-    (switch-to-buffer mode-buffer)
-    (erase-buffer)
-    (split-window-right)
-    (leetcode--pick n)
-    (leetcode--edit n)))
+  (let ((problem
+	 (car
+	  (leetcode--oref-with-default
+	   (leetcode-object-json-to-problem-list-ins
+	    (leetcode-rest-problemset-question-list
+	     (1- n)
+	     1
+	     (json-encode
+	      (leetcode-object-to-hashtable
+	       (make-instance 'leetcode-query-info)))))
+	   'problems))))
+    (leetcode--show problem)))
 
 (defun leetcode-show-next ()
   "Show the next leetcode programs after the current buffer."
@@ -380,72 +250,16 @@ N is a leetcode program number."
   (leetcode-show
    (+ 1 (string-to-number (leetcode--get-current-buff-num)))))
 
-(defun leetcode-test ()
-  "Submit the current buffer solution."
-  (interactive)
-  (leetcode--exec "test" (leetcode--get-current-buff-num)))
-
 (defun leetcode-submit ()
   "Submit the current buffer solution."
   (interactive)
-  (let ((the-buffer-name (buffer-name)))
-    (leetcode--exec "exec" (leetcode--get-current-buff-num))))
-
-(defun show-local-max-problem ()
-  "Show max item problem saved in local."
-  (interactive)
-  (leetcode-show
-   (apply #'max
-          (mapcar #'get-file-name-num
-                  (directory-files leetcode-path nil
-                                   (format "\\.%s$" leetcode-language))))))
-
-(defun leetcode-interactive ()
-  "Interactively select leetcode problem and show it."
-  (interactive)
-  (let ((selected-item
-         (completing-read "Choose a way to find the problem :"
-                          '("query all"
-                            "query by difficulty"
-                            "query by tag"))))
-    (cond
-     ((string= "query all" selected-item)
-      (leetcode-query-all-interactive))
-     ((string= "query by difficulty" selected-item)
-      (leetcode-filter-by-difficulty-interactive))
-     ((string= "query by tag" selected-item)
-      (leetcode-filter-by-tag-interactive)))))
-
-(defun leetcode-top100 ()
-  "Leetcode top 100."
-  (interactive)
-  (let* ((leetcode-question
-          (completing-read "Select a problem: " leetcode-top100))
-         (leetcode-num
-          (car (string-split leetcode-question "\\." t " "))))
-    (print leetcode-question)
-    (leetcode-show (string-to-number leetcode-num)))
-  )
-
-(defun leetcode-top100-random ()
-  "Leetcode top 100 random."
-  (interactive)
-  (let* ((leetcode-question (nth (random 100) leetcode-top100))
-         (leetcode-num
-          (car (string-split leetcode-question "\\." t " "))))
-    (print leetcode-question)
-    (leetcode-show (string-to-number leetcode-num)))
-  leetcode-question)
-
-(defun leetcode-get-current-description ()
-  "Leetcode get description of current problem."
-  (interactive)
-  (leetcode-show (string-to-number (leetcode--get-current-buff-num))))
-
-(defun leetcode-open-in-browser ()
-  "Open current Leetcode problem in browser."
-  (interactive)
-  (browse-url (concat leetcode-base-url (leetcode--get-current-buff-problem-name))))
-
+  (let ((id (string-to-number (leetcode--get-current-buff-num)))
+	(title-slug (nth 1 (string-split (buffer-name) "\\."))))
+    (leetcode-render--submission-status
+     (leetcode-object-json-convert 'leetcode-submission-status
+			      (leetcode-rest-submit title-slug
+						    (buffer-string)
+						    leetcode-language id)))))
 (provide 'leetcode)
 ;;; leetcode.el ends here
+
