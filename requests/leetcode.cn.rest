@@ -2,10 +2,11 @@
 POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
 Content-Type: application/json
 Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
--> jq-set-var :leetcode-rest--problemset-question-list-response {"page-info": {skip: ${:leetcode-rest--skip}, limit: ${:leetcode-rest--limit},num: .data.problemsetQuestionList.questions | length, total: .data.problemsetQuestionList.total, hasMore: .data.problemsetQuestionList.hasMore}, problems: [.data.problemsetQuestionList.questions.[] | {title, paidOnly, frontendQuestionId, titleCn, titleSlug, status, difficulty, acRate}]}
+-> jq-set-var :leetcode-rest--problemset-question-list-response {"page-info": {skip: ${:leetcode-rest--skip}, limit: ${:leetcode-rest--limit}, "page-num": .data.problemsetQuestionList.questions | length, "total-num": .data.problemsetQuestionList.total, "has-more": .data.problemsetQuestionList.hasMore}, problems: [.data.problemsetQuestionList.questions.[] | {title, paid: .paidOnly, id: .frontendQuestionId, "title-cn": .titleCn, "title-slug": .titleSlug, status, difficulty, "acceptance-rate": .acRate}]}
+
 {
 "query":"query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\n  problemsetQuestionList(\n    categorySlug: $categorySlug\n    limit: $limit\n    skip: $skip\n    filters: $filters\n  ) {\n    hasMore\n    total\n    questions {\n      acRate\n      difficulty\n      freqBar\n      frontendQuestionId\n      isFavor\n      paidOnly\n      solutionNum\n      status\n      title\n      titleCn\n      titleSlug\n      topicTags {\n        name\n        nameTranslated\n        id\n        slug\n      }\n      extra {\n        hasVideoSolution\n        topCompanyTags {\n          imgUrl\n          slug\n          numSubscribed\n        }\n      }\n    }\n  }\n}\n    ",
-"variables":{"categorySlug":"all-code-essentials","skip"::leetcode-rest--skip,"limit"::leetcode-rest--limit,"filters"::leetcode-rest--filters}
+"variables":{"categorySlug":"all-code-essentials","skip"::leetcode-rest--skip,"limit"::leetcode-rest--limit,"filters": :leetcode-rest--filters}
 }
 
 # question-tag-list
@@ -21,7 +22,7 @@ Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrf
 POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
 Content-Type: application/json
 Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
--> jq-set-var :leetcode-rest--session-progress-response { accepted: [.data.userProfileSessionProgress.numAcceptedQuestions.[] | {(.difficulty) : .count} ] | add, failed: [.data.userProfileSessionProgress.numFailedQuestions.[] | {(.difficulty) : .count} ] | add ,untouched: [.data.userProfileSessionProgress.numUntouchedQuestions.[] | {(.difficulty) : .count} ] | add, allSubNum: .data.userProfileSessionProgress.numSubmissions ,acSubNum: .data.userProfileSessionProgress.numAcSubmissions} + (.data.userProfileSessionProgress.numAcSubmissions / .data.userProfileSessionProgress.numSubmissions | {acRate : .})
+-> jq-set-var :leetcode-rest--session-progress-response { accepted: [.data.userProfileSessionProgress.numAcceptedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add, failed: [.data.userProfileSessionProgress.numFailedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add ,untouched: [.data.userProfileSessionProgress.numUntouchedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add, "total-submissions": .data.userProfileSessionProgress.numSubmissions , "accepted-submissions": .data.userProfileSessionProgress.numAcSubmissions} + (.data.userProfileSessionProgress.numAcSubmissions / .data.userProfileSessionProgress.numSubmissions | {"acceptance-rate" : .})
 {
 "operationName":"sessionProgress","variables":{},"query":"query sessionProgress {\n  userProfileSessionProgress {\n    numAcceptedQuestions {\n      difficulty\n      count\n      __typename\n    }\n    numFailedQuestions {\n      difficulty\n      count\n      __typename\n    }\n    numUntouchedQuestions {\n      difficulty\n      count\n      __typename\n    }\n    numSubmissions\n    numAcSubmissions\n    __typename\n  }\n}\n"
 }
@@ -64,5 +65,11 @@ Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrf
 GET https://leetcode.cn/submissions/detail/:leetcode--submission-id/check/
 content-type: application/json
 Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
--> jq-set-var :leetcode-rest--submission-status-response-state .state
--> jq-set-var :leetcode-rest--submission-status-response .
+-> jq-set-var :leetcode-rest--submission-status-response {"code-output": .code_output, "std-output": .std_output, "last-testcase": .last_testcase, "expected-output": .expected_output, "status-msg": .status_msg, "total-correct": .total_correct, "total-testcases": .total_testcases, "runtime-percentile": .runtime_percentile, "status-memory": .status_memory, "memory-percentile": .memory_percentile, "pretty-lang": .pretty_lang, "state": .state}
+
+# graphql-query-type
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--graphql-query-type-response .
+{"query":"query {\n  __type(name: \":leetcode-rest--graphql-type\") {\n    name\n    fields {\n      name\n      type {\n        name\n        kind\n      }\n      description\n    }\n  }\n}\n"}

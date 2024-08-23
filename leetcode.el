@@ -3,7 +3,10 @@
 ;; Copyright (C) 2022  Qiqi Jin
 
 ;; Author: Qiqi Jin <ginqi7@gmail.com>
-;; Keywords: lisp, tools
+;; Keywords: LeetCode
+;; Version: 1.0.0
+;; URL: https://github.com/ginqi7/leetcode-emacs
+;; Package-Requires: ((emacs "29.1") (restclient) (pcache))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -75,10 +78,10 @@
 c, cpp, csharp, golang, java, javascript, typescript, kotlin, php, python,
 python3, ruby, rust, scala, swift")
 
-(defvar leetcode--difficulties '("EASY" "MEDIUM" "HARD")
+(defvar leetcode--difficulties '("EASY" "MEDIUM" "HARD" "")
   "The LeetCode problem difficulty list.")
 
-(defvar leetcode--statuses '("NOT_STARTED" "TRIED" "AC")
+(defvar leetcode--statuses '("NOT_STARTED" "TRIED" "AC" "")
   "The LeetCode problem status list.")
 
 (defun leetcode ()
@@ -100,92 +103,91 @@ NAME is leetcode problem's file name."
   (string-to-number (cl-first (split-string name "\\."))))
 
 (defun leetcode--get-language-extension (language)
-"Leetcode Get Language Extension.
+  "Leetcode Get Language Extension.
 LANGUAGE: language for solving problem."
   (let ((extention (alist-get language leetcode--lang-extension-alist nil nil #'equal)))
-    (if extention
-	extention
-      (error "Not Support: %s" language))))
+    (if extention extention (error "Not Support: %s" language))))
 
 (defun leetcode--query (skip limit query-info-ins)
-"Query LeetCode problems.
+  "Query LeetCode problems.
 SKIP: number for skip.
 LIMIT number for limit.:
 QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
   (let* ((query-info-json
-	  (json-encode
-	   (leetcode-object-to-hashtable query-info-ins)))
+	  (leetcode-object-to-json-string query-info-ins))
 	 (problemset-question-list-json
 	  (leetcode-rest-problemset-question-list skip limit query-info-json))
 	 (session-progress-json (leetcode-rest-session-progress))
 	 (session-progress-ins (leetcode-object-json-convert 'leetcode-session-progress session-progress-json)))
     (leetcode-render--page
-     (leetcode-object-json-to-problem-list-ins problemset-question-list-json)
+     (leetcode-object-json-convert 'leetcode-problem-list problemset-question-list-json)
      query-info-ins
      session-progress-ins)))
 
 (defun leetcode--query-by-difficulty (leetcode-query-info-ins)
-"Add difficulty to leetcode-query-info-ins and Query problems.
+  "Add difficulty to leetcode-query-info-ins and Query problems.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
-  (eieio-oset leetcode-query-info-ins 'difficulty
-	      (completing-read "Select a difficulty: " leetcode--difficulties))
-  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
+  (let ((difficulty (completing-read "Select a difficulty: " leetcode--difficulties nil t)))
+    (if (string= difficulty "")
+	(slot-makeunbound leetcode-query-info-ins 'difficulty)
+      (eieio-oset leetcode-query-info-ins 'difficulty difficulty))
+    (leetcode--query 0 (window-body-height) leetcode-query-info-ins)))
 
-(defun leetcode--query-by-searchKeywords (leetcode-query-info-ins)
-  "Add searchKeywords to leetcode-query-info-ins and Query problems.
+(defun leetcode--query-by-keywords (leetcode-query-info-ins)
+  "Add keywords to leetcode-query-info-ins and Query problems.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
-  (eieio-oset leetcode-query-info-ins 'searchKeywords
-	      (read-string "Input some keywords: "))
-  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
+  (let ((keywords (read-string "Input some keywords: ")))
+    (if (string-blank-p keywords)
+	(slot-makeunbound leetcode-query-info-ins 'keywords)
+      (eieio-oset leetcode-query-info-ins 'keywords keywords))
+    (leetcode--query 0 (window-body-height) leetcode-query-info-ins)))
 
 (defun leetcode--query-by-status (leetcode-query-info-ins)
   "Add status to leetcode-query-info-ins and Query problems.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
-  (eieio-oset leetcode-query-info-ins 'status
-	      (completing-read "Select a status: " leetcode--statuses))
-  (leetcode--query 0 (window-body-height) leetcode-query-info-ins))
+  (let ((status (completing-read "Select a status: " leetcode--statuses nil t)))
+    (if (string= status "")
+	(slot-makeunbound leetcode-query-info-ins 'status)
+      (eieio-oset leetcode-query-info-ins 'status status))
+    (leetcode--query 0 (window-body-height) leetcode-query-info-ins)))
 
 (defun leetcode--query-by-tags (leetcode-query-info-ins)
   "Add tags to leetcode-query-info-ins and Query problems.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
   (unless leetcode--tags
     (setq leetcode--tags
-	  (mapcar
-	   (lambda (hashtable)
-	     (leetcode-object-hashtable-convert 'leetcode-tag hashtable))
-	   (json-parse-string (leetcode-rest-question-tag-list)))))
+	  (leetcode-object-json-convert 'leetcode-tag (leetcode-rest-question-tag-list))))
   (let ((selected-tags
 	 (leetcode-object-completing-read-multiple "Select some tags: " leetcode--tags 'name)))
-    (eieio-oset leetcode-query-info-ins 'tags
-		(mapcar
-		 (lambda (tag) (eieio-oref tag 'slug))
-		 selected-tags))
+    (if selected-tags
+	(eieio-oset leetcode-query-info-ins 'tags
+		    (mapcar
+		     (lambda (tag) (eieio-oref tag 'slug))
+		     selected-tags))
+      (slot-makeunbound leetcode-query-info-ins 'tags))
     (leetcode--query 0 (window-body-height) leetcode-query-info-ins)))
 
-(defun leetcode--query-next-page (leetcode-page-info-ins leetcode-query-info-ins)
-"Leetcode Query Next Page.
+(defun leetcode--query-by-next (leetcode-page-info-ins leetcode-query-info-ins)
+  "Leetcode Query Next Page.
 LEETCODE-PAGE-INFO-INS: an object make instance by class \='leetcode-page-info.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
   (let ((skip
-	 (leetcode--oref-with-default leetcode-page-info-ins 'skip))
-	(limit
-	 (leetcode--oref-with-default leetcode-page-info-ins 'limit))
-	(hasMore
-	 (leetcode--oref-with-default leetcode-page-info-ins 'hasMore)))
-    (if hasMore
+	 (eieio-oref leetcode-page-info-ins 'skip))
+	(limit (eieio-oref leetcode-page-info-ins 'limit))
+	(has-more (eieio-oref leetcode-page-info-ins 'has-more)))
+    (if has-more
 	(leetcode--query
 	 (+ skip limit)
 	 limit leetcode-query-info-ins)
       (message "There is no more next page."))))
 
-(defun leetcode--query-previous-page (leetcode-page-info-ins leetcode-query-info-ins)
-"Leetcode Query Previous Page.
+(defun leetcode--query-by-previous (leetcode-page-info-ins leetcode-query-info-ins)
+  "Leetcode Query Previous Page.
 LEETCODE-PAGE-INFO-INS: an object make instance by class \='leetcode-page-info.
 LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info."
   (let ((skip
-	 (leetcode--oref-with-default leetcode-page-info-ins 'skip))
-	(limit
-	 (leetcode--oref-with-default leetcode-page-info-ins 'limit)))
+	 (eieio-oref leetcode-page-info-ins 'skip))
+	(limit (eieio-oref leetcode-page-info-ins 'limit)))
     (if (>= (- skip limit) 0)
 	(leetcode--query
 	 (- skip limit)
@@ -198,13 +200,13 @@ LEETCODE-QUERY-INFO-INS: an object make instance by class \='leetcode-query-info
   (leetcode-show (string-to-number (leetcode--get-current-buff-num))))
 
 (defun leetcode-open-problem-code (problem)
-"Leetcode Open Problem Code.
+  "Leetcode Open Problem Code.
 PROBLEM: Object instance for class \='leetcode-problem."
   (let* ((base-file-name
 	  (concat
-	   (leetcode--oref-with-default problem 'frontendQuestionId)
+	   (eieio-oref problem 'id)
 	   "."
-	   (leetcode--oref-with-default problem 'titleSlug)))
+	   (eieio-oref problem 'title-slug)))
 	 (file-name
 	  (concat
 	   (file-name-concat leetcode-path base-file-name)
@@ -215,17 +217,16 @@ PROBLEM: Object instance for class \='leetcode-problem."
       (find-file file-name)
       (insert
        (leetcode-rest-question-editor-data
-	(leetcode--oref-with-default problem 'titleSlug)
+	(eieio-oref problem 'title-slug)
 	leetcode-language)))
     (find-file file-name)))
 
 (defun leetcode--show (problem)
-"Show problem by \='leetcode-problem ojbect.
+  "Show problem by \='leetcode-problem ojbect.
 PROBLEM: an object instance for \='leetcode-problem."
   (leetcode-open-problem-code problem)
   (leetcode-render-question-content
-     (leetcode-rest-question-content
-      (leetcode--oref-with-default problem 'titleSlug))))
+   (leetcode-rest-question-content (eieio-oref problem 'title-slug))))
 
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
@@ -233,14 +234,14 @@ N is a leetcode program number."
   (interactive "nProgram Number: ")
   (let ((problem
 	 (car
-	  (leetcode--oref-with-default
-	   (leetcode-object-json-to-problem-list-ins
+	  (eieio-oref
+	   (leetcode-object-json-convert
+	    'leetcode-problem-list
 	    (leetcode-rest-problemset-question-list
 	     (1- n)
 	     1
-	     (json-encode
-	      (leetcode-object-to-hashtable
-	       (make-instance 'leetcode-query-info)))))
+	     (leetcode-object-to-json-string
+	      (make-instance 'leetcode-query-info))))
 	   'problems))))
     (leetcode--show problem)))
 
@@ -257,9 +258,9 @@ N is a leetcode program number."
 	(title-slug (nth 1 (string-split (buffer-name) "\\."))))
     (leetcode-render--submission-status
      (leetcode-object-json-convert 'leetcode-submission-status
-			      (leetcode-rest-submit title-slug
-						    (buffer-string)
-						    leetcode-language id)))))
+				   (leetcode-rest-submit title-slug
+							 (buffer-string)
+							 leetcode-language id)))))
 (provide 'leetcode)
 ;;; leetcode.el ends here
 

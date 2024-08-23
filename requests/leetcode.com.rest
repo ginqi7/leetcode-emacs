@@ -1,0 +1,77 @@
+# problemset-question-list
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--problemset-question-list-response {"page-info": {skip: ${:leetcode-rest--skip}, limit: ${:leetcode-rest--limit}, "page-num": .data.problemsetQuestionList.questions | length, "total-num": .data.problemsetQuestionList.total, "has-more": true }, problems: [.data.problemsetQuestionList.questions.[] | {title, paid: .paidOnly, id: .frontendQuestionId, "title-cn": .titleSlug, "title-slug": .titleSlug, "status": .status , difficulty, "acceptance-rate": .acRate}]}
+
+{"query":"\n    query problemsetQuestionList($categorySlug: String, $limit: Int, $skip: Int, $filters: QuestionListFilterInput) {\n  problemsetQuestionList: questionList(\n    categorySlug: $categorySlug\n    limit: $limit\n    skip: $skip\n    filters: $filters\n  ) {\n    total: totalNum\n numPerPage: numPerPage\n currentPage: currentPage \n    questions: data {\n      acRate\n      difficulty\n      freqBar\n      frontendQuestionId: questionFrontendId\n      isFavor\n      paidOnly: isPaidOnly\n      status\n      title\n      titleSlug\n      topicTags {\n        name\n        id\n        slug\n      }\n      hasSolution\n      hasVideoSolution\n    }\n  }\n}\n    ","variables":{"categorySlug":"all-code-essentials", "skip"::leetcode-rest--skip,"limit"::leetcode-rest--limit,"filters": :leetcode-rest--filters},"operationName":"problemsetQuestionList"}
+
+# question-tag-list
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--question-tag-list-response [.data.questionTagTypeWithTags[] | .name as $type | .tagRelation[] | {name: .tag.name, id: .tag.id, slug: .tag.slug, type: $type}]
+{"query": "\n    query questionTagTypeWithTags {\n  questionTagTypeWithTags {\n    name\n    transName\n    tagRelation {\n      questionNum\n      tag {\n        name\n        id\n        nameTranslated\n        slug\n      }\n    }\n  }\n}\n    ", "variables": {}, "operationName": "questionTagTypeWithTags"}
+
+# session-progress
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--session-progress-response { accepted: [.data.userProfileUserQuestionProgressV2.numAcceptedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add, failed: [.data.userProfileUserQuestionProgressV2.numFailedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add ,untouched: [.data.userProfileUserQuestionProgressV2.numUntouchedQuestions.[] | {(.difficulty | ascii_downcase) : .count} ] | add , "total-submissions": 0, "accepted-submissions": 0, "acceptance-rate": 0.0  }
+
+{"query":"\n    query userProfileUserQuestionProgressV2($userSlug: String!) { \n  userProfileUserQuestionProgressV2(userSlug: $userSlug) {\n  numAcceptedQuestions {\n      count\n      difficulty\n    }\n    numFailedQuestions {\n      count\n      difficulty\n    }\n    numUntouchedQuestions {\n      count\n      difficulty\n    }\n    userSessionBeatsPercentage {\n      difficulty\n      percentage\n    }\n  }\n}\n    ","variables":{"userSlug":":leetcode-rest--user-name"},"operationName":"userProfileUserQuestionProgressV2"}
+
+
+# question-content
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--question-content-response .data.question.content
+{
+"query": "query questionContent($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    content\n    mysqlSchemas\n  }\n}\n",
+"variables": {"titleSlug":":leetcode-rest--title-slug"}
+}
+
+# question-editor-data
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--question-editor-data-response .data.question.codeSnippets.[] | select(.langSlug == "${leetcode-rest--language}").code
+{
+"query":"\n    query questionEditorData($titleSlug: String!) {\n  question(titleSlug: $titleSlug) {\n    questionId\n    questionFrontendId\n    codeSnippets {\n      lang\n      langSlug\n      code\n    }\n    enableRunCode\n    hasFrontendPreview\n    frontendPreviews\n  }\n}\n    ",
+"variables":{"titleSlug":":leetcode-rest--title-slug"},
+"operationName":"questionEditorData"
+}
+
+# submit
+POST :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug/submit/ 
+Origin: :leetcode-rest--protocol://:leetcode-rest--host
+Referer: :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug
+x-csrftoken: :leetcode-rest--csrftoken	
+content-type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--submit-response .submission_id
+{
+ "lang": ":leetcode-rest--language",
+ "question_id": ":leetcode-rest--question-id",
+ "typed_code": ":leetcode-rest--code"
+}
+
+# submission-status
+GET :leetcode-rest--protocol://:leetcode-rest--host/submissions/detail/:leetcode--submission-id/check/
+Origin: :leetcode-rest--protocol://:leetcode-rest--host
+Referer: :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug
+x-csrftoken: :leetcode-rest--csrftoken	
+content-type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--submission-status-response {"code-output": .code_output, "std-output": .std_output, "last-testcase": .last_testcase, "expected-output": .expected_output, "status-msg": .status_msg, "total-correct": .total_correct, "total-testcases": .total_testcases, "runtime-percentile": .runtime_percentile, "status-memory": .status_memory, "memory-percentile": .memory_percentile, "pretty-lang": .pretty_lang, "state": .state}
+
+
+# graphql-query-type
+POST :leetcode-rest--protocol://:leetcode-rest--host/graphql/
+Content-Type: application/json
+Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
+-> jq-set-var :leetcode-rest--graphql-query-type-response .
+{"query":"query {\n  __type(name: \":leetcode-rest--graphql-type\") {\n    name\n    fields {\n      name\n      type {\n        name\n        kind\n        ofType {\n          name\n          kind\n        }\n      }\n      args {\n        name\n        type {\n          name\n          kind\n        }\n      }\n      description\n    }\n  }\n}\n"}
+
+

@@ -3,7 +3,10 @@
 ;; Copyright (C) 2024  Qiqi Jin
 
 ;; Author: Qiqi Jin <ginqi7@gmail.com>
-;; Keywords:
+;; Keywords: LeetCode
+;; Version: 1.0.0
+;; URL: https://github.com/ginqi7/leetcode-emacs
+;; Package-Requires: ((emacs "29.1") (restclient) (pcache))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -49,11 +52,16 @@
 (require 'restclient)
 (require 'leetcode-object)
 
-(defcustom leetcode-rest-host "leetcode.cn" "LeetCode host."
+(defcustom leetcode-rest-host "leetcode.com" "LeetCode host."
   :type 'string
   :group 'leetcode)
 
 (defcustom leetcode-rest-protocol "https" "LeetCode protocol."
+  :type 'string
+  :group 'leetcode)
+
+(defcustom leetcode-rest-user-name ""
+  "LeetCode username (only required on leetcode.com)."
   :type 'string
   :group 'leetcode)
 
@@ -121,6 +129,10 @@ VARIABLE-NAME: a variable name in `restclient-var-overrides.'"
   "List all requests files."
   (directory-files leetcode-rest--requests-directory t "\\.rest"))
 
+(defun leetcode-rest--request-file ()
+  "Get request file by `leetcode-rest-host'."
+  (directory-files leetcode-rest--requests-directory t (concat leetcode-rest-host "\\.rest")))
+
 (defun leetcode-rest--search-request (&optional rest-name)
   "Search request by REST-NAME."
   (search-forward-regexp
@@ -171,15 +183,15 @@ LANGUAGE: language sovling problem."
 REQUEST-NAME: request name.
 PARAMS-ALIST: params alist."
   (let ((restclient-var-overrides (leetcode-rest--build-variables params-alist))
+	(inhibit-message (not leetcode-rest-show-detail-msg))
 	(response))
     (catch 'break
-      (dolist (file (leetcode-rest--list-request-files))
+      (dolist (file (leetcode-rest--request-file))
 	(with-temp-buffer
 	  (insert-file-contents file)
 	  (leetcode-rest--extend-restclient-variable)
 	  (goto-char (point-min))
 	  (when (leetcode-rest--search-request request-name)
-	    (print restclient-var-overrides)
 	    (restclient-http-send-current nil t t)
 	    (setq response
 		  (leetcode-rest--get-response (format leetcode-rest--response-template request-name)))
@@ -188,7 +200,8 @@ PARAMS-ALIST: params alist."
 
 (defun leetcode-rest-session-progress ()
   "Send reset to get session-progress."
-  (leetcode-rest-send-request "session-progress"))
+  (leetcode-rest-send-request "session-progress"
+			      `((":leetcode-rest--user-name" . ,leetcode-rest-user-name))))
 
 (defun leetcode--rest-check-submission-state (submission-id)
 "Leetcode Rest Check Submission State.
@@ -217,7 +230,12 @@ QUESTION-ID: question id."
      (lambda ()
        (leetcode--rest-check-submission-state submission-id))
      0.5)
-    (leetcode-rest--get-response ":leetcode-rest--submission-status-response")))
+    (leetcode-rest-send-request "submission-status" `((":leetcode--submission-id" . ,submission-id)))
+    ))
+
+(defun leetcode-rest-graphql-query-type (type)
+"Leetcode Rest Graphql Query TYPE Information."
+  (leetcode-rest-send-request "graphql-query-type" `((":leetcode-rest--graphql-type" . ,type))))
 
 (provide 'leetcode-rest)
 ;;; leetcode-rest.el ends here
