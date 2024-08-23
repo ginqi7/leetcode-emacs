@@ -51,7 +51,9 @@ Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrf
 
 # submit
 POST :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug/submit/ 
+Origin: :leetcode-rest--protocol://:leetcode-rest--host
 Referer: :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug
+x-csrftoken: :leetcode-rest--csrftoken	
 content-type: application/json
 Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
 -> jq-set-var :leetcode-rest--submit-response .submission_id
@@ -62,7 +64,10 @@ Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrf
 }
 
 # submission-status
-GET https://leetcode.cn/submissions/detail/:leetcode--submission-id/check/
+GET :leetcode-rest--protocol://:leetcode-rest--host/submissions/detail/:leetcode--submission-id/check/
+Origin: :leetcode-rest--protocol://:leetcode-rest--host
+Referer: :leetcode-rest--protocol://:leetcode-rest--host/problems/:leetcode-rest--title-slug
+x-csrftoken: :leetcode-rest--csrftoken	
 content-type: application/json
 Cookie: LEETCODE_SESSION=:leetcode-rest--session; csrftoken=:leetcode-rest--csrftoken
 -> jq-set-var :leetcode-rest--submission-status-response {"code-output": .code_output, "std-output": .std_output, "last-testcase": .last_testcase, "expected-output": .expected_output, "status-msg": .status_msg, "total-correct": .total_correct, "total-testcases": .total_testcases, "runtime-percentile": .runtime_percentile, "status-memory": .status_memory, "memory-percentile": .memory_percentile, "pretty-lang": .pretty_lang, "state": .state}
