@@ -299,7 +299,7 @@ SIGNAL is current running process' signal."
                   :buffer "leetcode_list_value"
                   :command (list "leetcode" "list" "-q" option)
                   :filter #'leetcode--ansi-color-insertion-filter
-                  :sentinel 'leetcode-random)))
+                  :sentinel 'leetcode--random)))
 
 (defun leetcode-filter-by-difficulty-interactive ()
   "Async interactively select leetcode programs by difficulty and show it."
