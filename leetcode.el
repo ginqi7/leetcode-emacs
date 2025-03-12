@@ -24,8 +24,9 @@
 
 ;;; Code:
 
-(require 'ctable nil t)
 (require 'cl-lib)
+(require 'tabulated-list)
+(require 'rx)
 
 (defvar leetcode-path "~/.leetcode/code")
 
@@ -65,104 +66,105 @@ NAME is leetcode problem's file name."
 (defun leetcode--parse-leetcode-entry (str)
   "Divide a leetcode entry title into 5 columns.
 STR is a leetcode entry title."
-  (let ((the-list (split-string str " +\\|\\[\\|\\]" t))
+  (let ((pattern (rx
+                  (opt (group "✔"))
+                  (opt (+ " "))
+                  "[" (opt (+ " ")) (group (+ digit)) (opt (+ " ")) "] " ; id
+                  (group (+? anything)) " "  ; title
+                  (group (or "Easy" "Medium" "Hard")) (+ " ") ; difficulty
+                  "(" (group (+? anything)) ")")) ; frequency
         (accepted)
         (number)
         (title)
         (difficulty)
         (frequency))
-    (if (string-match "[0-9]+" (car the-list))
-        (setq number
-              (car the-list)
-              title
-              (mapconcat 'identity
-                         (cl-subseq the-list 1
-                                    (- (length the-list) 3))
-                         " "))
-      (setq accepted
-            (car the-list)
-            number
-            (nth 1 the-list)
-            title
-            (mapconcat 'identity
-                       (cl-subseq the-list 2 (- (length the-list) 3))
-                       " ")))
-    (setq difficulty
-          (nth (- (length the-list) 3) the-list)
-          frequency
-          (concat
-           (nth (- (length the-list) 2) the-list)
-           (nth (- (length the-list) 1) the-list)))
-
+    (when (string-match pattern str)
+      (setq accepted (match-string 1 str))
+      (setq number (match-string 2 str))
+      (setq title (match-string 3 str))
+      (setq difficulty (match-string 4 str))
+      (setq frequency (match-string 5 str)))
     (list accepted number title difficulty frequency)))
 
 (defun leetcode--entry-filter (lst)
   "Filter leetcode list.
-if 'leetcode-hide-no-auth-problems' is t
-LST is leetcode problem list."
-  (if leetcode-hide-no-auth-problems (not (string= (car lst) "🔒")) t))
+  if 'leetcode-hide-no-auth-problems' is t
+  LST is leetcode problem list."
+  (when (or (nth 0 lst)
+            (nth 1 lst)
+            (nth 2 lst)
+            (nth 3 lst)
+            (nth 4 lst))
+    (if leetcode-hide-no-auth-problems (not (string= (car lst) "🔒")) t)))
 
 (defun leetcode--parse-leetcode-list (str)
   "Divide a leetcode entry title into 5 columns.
-STR is a leetcode entry title."
+  STR is a leetcode entry title."
   (seq-filter
    #'leetcode--entry-filter
    (mapcar #'leetcode--parse-leetcode-entry
            (split-string str "\n+" t))))
 
-(defun leetcode--create-cmodel (title)
-  "Create cmodel by title string.
-TITLE is a ctable title string."
-  (make-ctbl:cmodel :title  title :align 'left))
-
-(defun leetcode-add-click-hook ()
-  "Add click function on leetcode ctable."
-  (goto-char (point-min))
-  (let ((cp (ctbl:cp-get-component)))
-    (ctbl:cp-add-click-hook
-     cp
-     (lambda ()
-       (leetcode-show
-        (string-to-number (nth 1 (ctbl:cp-get-selected-data-row cp))))))))
+(defun leetcode-click ()
+  "Add click function on leetcode."
+  (interactive)
+  (leetcode-show (string-to-number (tabulated-list-get-id))))
 
 (defun leetcode--list-all-sync (process signal)
   "Create a new buffer to show all leetcode programs list.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
+  PROCESS is current running process.
+  SIGNAL is current running process' signal."
   (when (memq (process-status process) '(exit signal))
     (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
            (rows
             (leetcode--parse-leetcode-list
-             (process-get process 'output)))
-           (async-model    ; wrapping a large data in async-data-model
-            (ctbl:async-model-wrapper rows)))
-
+             (process-get process 'output))))
       (kill-buffer "leetcode_list_value")
       (switch-to-buffer mode-buffer)
+      (setq buffer-read-only nil)
       (erase-buffer)
-      (ctbl:create-table-component-region
-       :model (make-ctbl:model
-               :column-model (mapcar 'leetcode--create-cmodel
-                                     (list "Accepted"
-                                           "Number"
-                                           "Title"
-                                           "Difficulty"
-                                           "Frequency"))
-               :data async-model)))
-    (leetcode-add-click-hook)
-    (setq buffer-read-only nil)
+      (leetcode-problems-mode)
+      (leetcode-problems--refresh rows)
+      (setq buffer-read-only t))
     (goto-char (point-min))))
+
+(define-derived-mode leetcode-problems-mode tabulated-list-mode "leetcode-list"
+  "Major mode for browsing LeetCode problems."
+  (setq tabulated-list-format
+        (vector
+         '("Status" 8 t)
+         '("Number" 8 t)
+         '("Title" 50 t)
+         '("Difficulty" 10 t)
+         '("Acceptance" 10 t)))
+  (setq tabulated-list-sort-key (cons "Number" nil))
+  (tabulated-list-init-header)
+  (keymap-set leetcode-problems-mode-map "RET" 'leetcode-click))
+
+
+(defun leetcode-problems--refresh (data)
+  "Refresh the LeetCode problems buffer with DATA."
+  (setq tabulated-list-entries
+        (mapcar (lambda (row)
+                  (list (nth 1 row)
+                        (vector (or (nth 0 row) "")
+                                (format "%04d" (string-to-number (nth 1 row)))
+                                (nth 2 row)
+                                (nth 3 row)
+                                (nth 4 row))))
+                data))
+  (tabulated-list-print))
 
 (defun leetcode--pick (n)
   "Run =leetcode pick= to select a leetcode problem.
-N is leetcode number."
+  N is leetcode number."
   (let ((raw-message
          (shell-command-to-string (format "leetcode pick %s" n))))
     (insert (replace-regexp-in-string "\015" "" raw-message))))
 
 (defun leetcode--edit (n)
   "Run =leetcode edit= to edit a leetcode problem.
-N is leetcode number."
+  N is leetcode number."
   (shell-command-to-string (format "leetcode edit %s" n))
   (let ((match
          (concat "^"
@@ -176,8 +178,8 @@ N is leetcode number."
 
 (defun leetcode--ansi-color-insertion-filter (proc string)
   "Parse leetcode command output put it in process' properties.
-PROC is current running process.
-STRING is current process' output."
+  PROC is current running process.
+  STRING is current process' output."
   (when (buffer-live-p (process-buffer proc))
     (with-current-buffer (process-buffer proc)
       (let ((output (remove-unuseful string)))
@@ -187,8 +189,8 @@ STRING is current process' output."
 
 (defun leetcode--exec (action num)
   "Execute leetcode action.
-ACTION is leetcode shell optons.
-NUM is leetcode problem's number."
+  ACTION is leetcode shell optons.
+  NUM is leetcode problem's number."
   (let ((mode-buffer (get-buffer-create "*leetcode-result*")))
     (delete-other-windows)
     (split-window-right)
@@ -213,8 +215,8 @@ NUM is leetcode problem's number."
 
 (defun leetcode--random (process signal)
   "Random open a leetcode problem.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
+  PROCESS is current running process.
+  SIGNAL is current running process' signal."
   (when (memq (process-status process) '(exit signal))
     (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
            (rows
@@ -236,8 +238,8 @@ SIGNAL is current running process' signal."
 
 (defun leetcode--list-all-interactive (process signal)
   "List all leetcode in minibuffer.
-PROCESS is current running process.
-SIGNAL is current running process' signal."
+  PROCESS is current running process.
+  SIGNAL is current running process' signal."
   (when (memq (process-status process) '(exit signal))
     (let* ((mode-buffer (get-buffer-create "*leetcode-list*"))
            (rows
@@ -364,7 +366,7 @@ SIGNAL is current running process' signal."
 
 (defun leetcode-show (n)
   "Show leetcode programs message and download file.
-N is a leetcode program number."
+  N is a leetcode program number."
   (interactive "nProgram Number: ")
   (delete-other-windows)
   (let ((mode-buffer (get-buffer-create "*leetcode-description*")))
@@ -424,8 +426,8 @@ N is a leetcode program number."
          (leetcode-num
           (car (string-split leetcode-question "\\." t " "))))
     (print leetcode-question)
-    (leetcode-show (string-to-number leetcode-num)))
-  )
+    (leetcode-show (string-to-number leetcode-num))))
+
 
 (defun leetcode-top100-random ()
   "Leetcode top 100 random."

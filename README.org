@@ -7,12 +7,7 @@ This is an Emacs plugin that makes it easier and faster to write leetcode progra
 
 This tool is based on leetcode-cli, _You can install the latest version through its [[https://github.com/skygragon/leetcode-cli][website]]_.
 
-*The backend leetcode-cli changed to other implement* [[https://github.com/clearloop/leetcode-cli][github]] 
-
-+ ctable
-This tool uses the emacs package =ctable= to show all leetcode issues,
-you can download it from [[https://github.com/kiwanami/emacs-ctable][github]] or install it using ELPA.
-
+*The backend leetcode-cli changed to other implement* [[https://github.com/clearloop/leetcode-cli][github]]
 
 ** Installing
 + clone the project in your own emacs configuration files directory, like:
@@ -108,7 +103,7 @@ Like *leetcode-submit* , you can using *leetcode-test* function to test current 
 *** Quickly jump max index problem in local
 *leetcode-show-local-max-problem*
 
-Use this function, you can quickly jump the max index problem in your local file. You needn't go to your leetcode directory to find last file you handled 
+Use this function, you can quickly jump the max index problem in your local file. You needn't go to your leetcode directory to find last file you handled
 
 *** Interactively filter and select problem and open it
 *leetcode-interactive*
