@@ -174,17 +174,13 @@ STR is a leetcode entry title."
     (find-file (car (directory-files leetcode-path 'full match)))
     (leetcode-edit-mode)))
 
-(defun remove-unuseful (str)
-  "Remove some unuseful char in STR."
-  (replace-regexp-in-string "[\015>=*]" "" (ansi-color-apply str)))
-
 (defun leetcode--ansi-color-insertion-filter (proc string)
   "Parse leetcode command output put it in process' properties.
   PROC is current running process.
   STRING is current process' output."
   (when (buffer-live-p (process-buffer proc))
     (with-current-buffer (process-buffer proc)
-      (let ((output (remove-unuseful string)))
+      (let ((output (ansi-color-apply string)))
         (process-put proc 'output
                      (concat (process-get proc 'output) output))
         (insert output)))))
@@ -199,6 +195,7 @@ STR is a leetcode entry title."
     (other-window 1)
     (switch-to-buffer mode-buffer)
     (erase-buffer)
+    (font-lock-mode 1)
     (other-window 1))
 
   (make-process :name "leetcode exec"
