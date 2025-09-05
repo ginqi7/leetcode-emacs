@@ -159,9 +159,10 @@ STR is a leetcode entry title."
 (defun leetcode--pick (n)
   "Run =leetcode pick= to select a leetcode problem.
   N is leetcode number."
-  (let ((raw-message
-         (shell-command-to-string (format "leetcode pick %s" n))))
-    (insert (replace-regexp-in-string "\015" "" raw-message))))
+  (make-process :name "leetcode pick"
+                :buffer "*leetcode-description*"
+                :command `("leetcode" "pick" ,(int-to-string n))
+                :filter #'leetcode--ansi-color-insertion-filter))
 
 (defun leetcode--edit (n)
   "Run =leetcode edit= to edit a leetcode problem.
