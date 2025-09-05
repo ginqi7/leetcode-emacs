@@ -27,6 +27,7 @@
 (require 'cl-lib)
 (require 'tabulated-list)
 (require 'rx)
+(require 'transient)
 
 (defvar leetcode-path "~/.leetcode/code")
 
@@ -170,7 +171,8 @@ STR is a leetcode entry title."
          (concat "^"
                  (number-to-string n)
                  "\." ".*" "\." leetcode-language "$")))
-    (find-file (car (directory-files leetcode-path 'full match)))))
+    (find-file (car (directory-files leetcode-path 'full match)))
+    (leetcode-edit-mode)))
 
 (defun remove-unuseful (str)
   "Remove some unuseful char in STR."
@@ -448,6 +450,28 @@ STR is a leetcode entry title."
   "Open current Leetcode problem in browser."
   (interactive)
   (browse-url (concat leetcode-base-url (leetcode--get-current-buff-problem-name))))
+
+(transient-define-prefix leetcode-commands ()
+  "LeetCode commands menu."
+  [["Problem"
+    ("l" "List problems" leetcode-list-all)
+    ("d" "Show description" leetcode-get-current-description)
+    ("b" "Show problem in browser" leetcode-open-in-browser)]
+   ["Code"
+    ("s" "Submit solution" leetcode-submit)
+    ("t" "Test solution" leetcode-test)]
+   ["Navigation"
+    ("n" "Next problem" leetcode-show-next)
+    ("S" "Show problem" leetcode-show)]])
+
+(define-minor-mode leetcode-edit-mode
+  "A minor mode for LeetCode."
+  :lighter "LC"
+  :global nil
+  :keymap
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "C-c l") 'leetcode-commands)
+    map))
 
 (provide 'leetcode)
 ;;; leetcode.el ends here
